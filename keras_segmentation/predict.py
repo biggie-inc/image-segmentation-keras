@@ -93,7 +93,7 @@ def concat_lenends(seg_img, legend_img):
 
 def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
                            colors=class_colors, class_names=None,
-                           overlay_img=False, show_legends=False,
+                           overlay_img=True, show_legends=True,
                            prediction_width=None, prediction_height=None):
 
     if n_classes is None:
