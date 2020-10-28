@@ -93,12 +93,13 @@ def concat_lenends(seg_img, legend_img):
 
 def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
                            colors=class_colors, class_names=None,
-                           overlay_img=True, show_legends=True,
+                           overlay_img=True, show_legends=False,
                            prediction_width=None, prediction_height=None):
 
     if n_classes is None:
         n_classes = np.max(seg_arr)
-
+    ############
+    print(f'visualize_segmentation colors: {colors}')
     seg_img = get_colored_segmentation_image(seg_arr, n_classes, colors=colors)
 
     if inp_img is not None:
@@ -127,7 +128,7 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
 
 def predict(model=None, inp=None, out_fname=None,
             checkpoints_path=None, overlay_img=True,
-            class_names=None, show_legends=True, colors=class_colors,
+            class_names=None, show_legends=False, colors=class_colors,
             prediction_width=None, prediction_height=None):
 
     if model is None and (checkpoints_path is not None):
@@ -153,6 +154,12 @@ def predict(model=None, inp=None, out_fname=None,
     pr = model.predict(np.array([x]))[0]
     pr = pr.reshape((output_height,  output_width, n_classes)).argmax(axis=2)
 
+    ############################
+    print(f'unique classes: {np.unique(pr)}')
+    print(f'output of get image array: {x}')
+    print(f'colors: {colors}')
+    ###########################
+
     seg_img = visualize_segmentation(pr, inp, n_classes=n_classes,
                                      colors=colors, overlay_img=overlay_img,
                                      show_legends=show_legends,
@@ -160,19 +167,22 @@ def predict(model=None, inp=None, out_fname=None,
                                      prediction_width=prediction_width,
                                      prediction_height=prediction_height)
 
+    #########
+    plt.show(seg_img)
+    plt.axis('off')
+    ########
+
     if out_fname is not None:
         cv2.imwrite(out_fname, seg_img)
     
-    ############################
-    print(np.unique(pr))
-    ###########################
+
 
     return pr
 
 
 def predict_multiple(model=None, inps=None, inp_dir=None, out_dir=None,
                      checkpoints_path=None, overlay_img=True,
-                     class_names=None, show_legends=True, colors=class_colors,
+                     class_names=None, show_legends=False, colors=class_colors,
                      prediction_width=None, prediction_height=None):
 
     if model is None and (checkpoints_path is not None):

@@ -64,7 +64,6 @@ def predict_action(command_parser):
     parser.add_argument("--checkpoints_path", type=str, required=True)
     parser.add_argument("--input_path", type=str, default="", required=True)
     parser.add_argument("--output_path", type=str, default="", required=True)
-    parser.add_argument("--classes", type=list, default=[0,1], required=False)
 
     def action(args):
         input_path_extension = args.input_path.split('.')[-1]
