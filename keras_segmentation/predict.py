@@ -4,6 +4,12 @@ import json
 import os
 import six
 
+###
+import matplotlib.path as mplPath
+import matplotlib.pyplot as plt
+from matplotlib.patches import Polygon
+###
+
 import cv2
 import numpy as np
 from tqdm import tqdm
@@ -98,8 +104,7 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
 
     if n_classes is None:
         n_classes = np.max(seg_arr)
-    ############
-    print(f'visualize_segmentation colors: {colors}')
+
     seg_img = get_colored_segmentation_image(seg_arr, n_classes, colors=colors)
 
     if inp_img is not None:
@@ -151,14 +156,25 @@ def predict(model=None, inp=None, out_fname=None,
 
     x = get_image_array(inp, input_width, input_height,
                         ordering=IMAGE_ORDERING)
+    # x appears to be a normalized output
     pr = model.predict(np.array([x]))[0]
     pr = pr.reshape((output_height,  output_width, n_classes)).argmax(axis=2)
+    # pr is the pixel-wise class output each pixel = 0,1,2
 
-    ############################
-    print(f'unique classes: {np.unique(pr)}')
-    print(f'output of get image array: {x}')
-    print(f'colors: {colors}')
-    ###########################
+
+    #############################
+    # any print statements here #
+    img_pts = [(x,y) for y in range(inp.shape[0]) for x in range(inp.shape[1])]
+    print(f'img_pts: {img_pts}')
+    pr2 = np.where(pr==2)
+    coords = zip(pr2[0], pr2[1])
+    print(f'pr2: {pr2}')
+    print(f'coords: {coords}')
+    # plate_array_path = mplPath.Path(pr2)
+    # plate_points = window_array_path.contains_points(img_pts, radius=0.1)
+    # print(f'plate points: {plate_points}')
+    # plate_binary = np.array(window_points.reshape(image.shape[0],image.shape[1]), dtype='uint8')
+    #############################
 
     seg_img = visualize_segmentation(pr, inp, n_classes=n_classes,
                                      colors=colors, overlay_img=overlay_img,
@@ -166,14 +182,16 @@ def predict(model=None, inp=None, out_fname=None,
                                      class_names=class_names,
                                      prediction_width=prediction_width,
                                      prediction_height=prediction_height)
+    # seg_img: per-pixel [R,G,B] output
 
-    #########
-    plt.show(seg_img)
-    plt.axis('off')
-    ########
+
+    ################
+    print(f'seg_img output: {seg_img}')
+    ################
 
     if out_fname is not None:
         cv2.imwrite(out_fname, seg_img)
+        cv2.imwrite('/content/predictions/plate_binary.png', plate_binary)
     
 
 
