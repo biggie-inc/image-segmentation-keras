@@ -159,8 +159,8 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
                     cv2.FONT_HERSHEY_DUPLEX, .25, (0, 0, 0), 1)
     cv2.circle(seg_img, (w_center, window_ymax), 2, (0,255,0))
     cv2.circle(seg_img, (window_xmin, h_center), 2, (0,0,255))
-    cv2.circle(seg_img, ((plate_xmax + plate_xmin)/2, plate_ymin), 2, (0,255,0))
-    cv2.circle(seg_img, (plate_xmin, (plate_ymax + plate_ymin)/2), 2, (0,0,255))
+    cv2.circle(seg_img, (int((plate_xmax + plate_xmin)/2), plate_ymin), 2, (0,255,0))
+    cv2.circle(seg_img, (plate_xmin, int((plate_ymax + plate_ymin)/2)), 2, (0,0,255))
     #####
 
     # resizes the seg_img to original image size
