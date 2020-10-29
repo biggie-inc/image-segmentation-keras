@@ -165,11 +165,10 @@ def predict(model=None, inp=None, out_fname=None,
     #############################
     # any print statements here #
     img_pts = [(x,y) for y in range(inp.shape[0]) for x in range(inp.shape[1])]
-    print(f'img_pts: {img_pts}')
     pr2 = np.where(pr==2)
     coords = zip(pr2[0], pr2[1])
-    print(f'pr2: {pr2}')
-    print(f'coords: {coords}')
+    print(f'pr2: {pr2[:100]}')
+    print(f'coords: {coords[:100]}')
     # plate_array_path = mplPath.Path(pr2)
     # plate_points = window_array_path.contains_points(img_pts, radius=0.1)
     # print(f'plate points: {plate_points}')
