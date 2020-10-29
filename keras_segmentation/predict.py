@@ -96,6 +96,17 @@ def concat_lenends(seg_img, legend_img):
 
     return out_img
 
+#######
+def get_license_xy_min_max(seg_arr):
+    seg_arr2 = np.where(seg_arr==2) # outputs two arrays of [all x's] and [all y's]
+    
+    ymax = max(seg_arr2[0])
+    ymin = min(seg_arr2[0])
+    xmax = max(seg_arr2[1])
+    xmin = min(seg_arr2[1])
+
+    return xmin, xmax, ymin, ymax 
+######
 
 def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
                            colors=class_colors, class_names=None,
@@ -105,8 +116,16 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
     if n_classes is None:
         n_classes = np.max(seg_arr)
 
+    #####
+    xmin, xmax, ymin, ymax = get_license_xy_min_max(seg_arr)
+    #####
+
     seg_img = get_colored_segmentation_image(seg_arr, n_classes, colors=colors)
 
+    #####
+    cv2.rectangle(seg_img, (xmin, ymin), (xmax, ymax),
+                      (0,255,0), 2)
+    #####
     if inp_img is not None:
         orininal_h = inp_img.shape[0]
         orininal_w = inp_img.shape[1]
@@ -164,7 +183,7 @@ def predict(model=None, inp=None, out_fname=None,
 
     #############################
     # any print statements here #
-    img_pts = [(x,y) for y in range(inp.shape[0]) for x in range(inp.shape[1])]
+    #img_pts = [(x,y) for y in range(inp.shape[0]) for x in range(inp.shape[1])]
     pr2 = np.where(pr==2) # outputs two arrays of [all x's] and [all y's]
     print(f'x max: {max(pr2[0])}, x min: {min(pr2[0])}, y max: {max(pr2[1])}, y min: {min(pr2[1])}')
     #pr2_coords = [(x,y) for x in pr2[0] for y in pr2[1]]
@@ -186,7 +205,7 @@ def predict(model=None, inp=None, out_fname=None,
     #######
     # rect around license plate
     cv2.rectangle(seg_img, (min(pr2[0]), min(pr2[1])), (max(pr2[0]), max(pr2[1])),
-                      (255,0,0), 2)
+                      (0,255,0), 2)
     #######
 
 
