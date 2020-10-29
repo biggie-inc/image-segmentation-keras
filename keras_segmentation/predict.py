@@ -110,10 +110,10 @@ def get_plate_xy_min_max(seg_arr):
 def get_window_xy_min_max(seg_arr):
     seg_arr1 = np.where(seg_arr==1) # outputs two arrays of [all y's] and [all x's] for class 1: window
     
-    xmax = max(seg_arr1[0])
-    xmin = min(seg_arr1[0])
-    ymax = max(seg_arr1[1])
-    ymin = min(seg_arr1[1])
+    ymax = max(seg_arr1[0])
+    ymin = min(seg_arr1[0])
+    xmax = max(seg_arr1[1])
+    xmin = min(seg_arr1[1])
 
     return xmin, xmax, ymin, ymax 
 
@@ -152,10 +152,11 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
     cv2.rectangle(seg_img, (plate_xmin, plate_ymin), (plate_xmax, plate_ymax),
                       (0,0,255), 2)
     # add window dimensions
-    cv2.putText(seg_img, f'Window Height: {window_height}', (int(window_xmin + 20), int(window_ymin - 8)),
+    cv2.putText(seg_img, f'Window Height: {window_height}', (int(window_xmin), int(window_ymin - 8)),
                     cv2.FONT_HERSHEY_DUPLEX, .25, (0, 0, 0), 1)
-    cv2.putText(seg_img, f'Window Width: {window_width}', (int(window_xmin + 20), int(window_ymax + 8)),
+    cv2.putText(seg_img, f'Window Width: {window_width}', (int(window_xmin), int(window_ymax + 8)),
                     cv2.FONT_HERSHEY_DUPLEX, .25, (0, 0, 0), 1)
+    cv2.circle(seg_img, (window_xmin, window_ymax), 2, (150,0,150))
     #####
 
     # resizes the seg_img to original image size
