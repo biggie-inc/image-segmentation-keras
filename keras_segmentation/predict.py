@@ -153,9 +153,9 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
                       (0,0,255), 2)
     # add window dimensions
     cv2.putText(seg_img, f'Window Height: {window_height}', (int(window_xmin + 20), int(window_ymin - 8)),
-                    cv2.FONT_HERSHEY_SIMPLE, .25, (0, 0, 0), 1)
+                    cv2.FONT_HERSHEY_DUPLEX, .25, (0, 0, 0), 1)
     cv2.putText(seg_img, f'Window Width: {window_width}', (int(window_xmin + 20), int(window_ymax + 8)),
-                    cv2.FONT_HERSHEY_SIMPLE, .25, (0, 0, 0), 1)
+                    cv2.FONT_HERSHEY_DUPLEX, .25, (0, 0, 0), 1)
     #####
 
     # resizes the seg_img to original image size
