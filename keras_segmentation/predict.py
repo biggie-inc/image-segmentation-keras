@@ -152,10 +152,10 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
     cv2.rectangle(seg_img, (plate_xmin, plate_ymin), (plate_xmax, plate_ymax),
                       (0,0,255), 2)
     # add window dimensions
-    cv2.putText(seg_img, f'Window Height: {window_height}', (w_center, (window_ymin - 5)),
-                    cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 1)
-    cv2.putText(seg_img, f'Window Width: {window_width}', (w_center, (window_ymax + 5)),
-                    cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 1)
+    # cv2.putText(seg_img, f'Window Height: {window_height}', (w_center, (window_ymin - 5)),
+    #                 cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 1)
+    # cv2.putText(seg_img, f'Window Width: {window_width}', (w_center, (window_ymax + 5)),
+    #                 cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 0), 1)
     #####
 
     # resizes the seg_img to original image size
