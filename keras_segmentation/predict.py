@@ -150,15 +150,17 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
 
     #####
     # plot plate rect
-    cv2.rectangle(seg_img, (plate_xmin, plate_ymin), (plate_xmax, plate_ymax),
-                      (0,0,255), 2)
+    # cv2.rectangle(seg_img, (plate_xmin, plate_ymin), (plate_xmax, plate_ymax),
+    #                   (0,0,255), 2)
     # add window dimensions
     cv2.putText(seg_img, f'Window Height: {window_height}', (int(window_xmin), int(window_ymin - 8)),
                     cv2.FONT_HERSHEY_DUPLEX, .25, (0, 0, 0), 1)
     cv2.putText(seg_img, f'Window Width: {window_width}', (int(window_xmin), int(window_ymax + 8)),
                     cv2.FONT_HERSHEY_DUPLEX, .25, (0, 0, 0), 1)
-    cv2.circle(seg_img, (window_ymax, int(w_center)), 2, (255,0,150))
-    cv2.circle(seg_img, (window_xmin, int(h_center)), 2, (255,0,150))
+    cv2.circle(seg_img, (w_center, window_ymax), 2, (0,255,0))
+    cv2.circle(seg_img, (window_xmin, h_center), 2, (0,0,255))
+    cv2.circle(seg_img, ((plate_xmax + plate_xmin)/2, plate_ymin), 2, (0,255,0))
+    cv2.circle(seg_img, (plate_xmin, (plate_ymax + plate_ymin)/2), 2, (0,0,255))
     #####
 
     # resizes the seg_img to original image size
