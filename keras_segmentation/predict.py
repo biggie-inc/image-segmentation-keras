@@ -166,8 +166,9 @@ def predict(model=None, inp=None, out_fname=None,
     # any print statements here #
     img_pts = [(x,y) for y in range(inp.shape[0]) for x in range(inp.shape[1])]
     pr2 = np.where(pr==2) # outputs two arrays of [all x's] and [all y's]
-    pr2_coords = zip(pr2[0], pr2[1])
-    print(f'coords: {pr2_coords}')
+    print(f'x max: {max(pr2[0])}, x min: {min(pr2[0])}, y max: {max(pr2[1])}, y min: {min(pr2[1])}')
+    #pr2_coords = [(x,y) for x in pr2[0] for y in pr2[1]]
+    #print(f'coords: {pr2_coords}')
     # plate_array_path = mplPath.Path(pr2)
     # plate_points = window_array_path.contains_points(img_pts, radius=0.1)
     # print(f'plate points: {plate_points}')
@@ -182,14 +183,16 @@ def predict(model=None, inp=None, out_fname=None,
                                      prediction_height=prediction_height)
     # seg_img: per-pixel [R,G,B] output
 
+    #######
+    # rect around license plate
+    cv2.rectangle(seg_img, (min(pr2[0]), min(pr2[1])), (max(pr2[0]), max(pr2[1])),
+                      (255,0,0), 2)
+    #######
 
-    ################
-    print(f'seg_img output: {seg_img}')
-    ################
 
     if out_fname is not None:
         cv2.imwrite(out_fname, seg_img)
-        cv2.imwrite('/content/predictions/plate_binary.png', plate_binary)
+        #cv2.imwrite('/content/predictions/plate_binary.png', plate_binary)
     
 
 
