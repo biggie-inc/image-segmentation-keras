@@ -117,16 +117,17 @@ def get_window_xy_min_max(seg_arr):
 
     return xmin, xmax, ymin, ymax 
 
-def get_window_h_w_centriods(window_xmin, window_xmax, window_ymin, window_ymax, pixels_per_inch):
-    window_width = (window_xmax - window_xmin)/pixels_per_inch
-    window_height = (window_ymax - window_ymin)/pixels_per_inch
-    w_center = (window_xmax + window_xmin)/2
-    h_center = (window_ymax + window_ymin)/2
-    return window_height, window_width, h_center, w_center
-
 def get_pixels_per_inch(plate_xmin, plate_xmax):
     pixels_per_inch = (plate_xmax - plate_xmin)/12 # all license plates are 12" wide
     return pixels_per_inch
+
+def get_window_h_w_centriods(window_xmin, window_xmax, window_ymin, window_ymax, pixels_per_inch):
+    window_width = (window_xmax - window_xmin)/pixels_per_inch
+    window_height = (window_ymax - window_ymin)/pixels_per_inch
+    w_center = int((window_xmax + window_xmin)/2)
+    h_center = int((window_ymax + window_ymin)/2)
+    return window_height, window_width, h_center, w_center
+
 #######
 
 def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
@@ -156,7 +157,8 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
                     cv2.FONT_HERSHEY_DUPLEX, .25, (0, 0, 0), 1)
     cv2.putText(seg_img, f'Window Width: {window_width}', (int(window_xmin), int(window_ymax + 8)),
                     cv2.FONT_HERSHEY_DUPLEX, .25, (0, 0, 0), 1)
-    cv2.circle(seg_img, (window_xmin, window_ymax), 2, (150,0,150))
+    cv2.circle(seg_img, (window_ymax, int(w_center)), 2, (255,0,150))
+    cv2.circle(seg_img, (window_xmin, int(h_center)), 2, (255,0,150))
     #####
 
     # resizes the seg_img to original image size
