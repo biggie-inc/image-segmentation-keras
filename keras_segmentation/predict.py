@@ -110,10 +110,10 @@ def get_plate_xy_min_max(seg_arr):
 def get_window_xy_min_max(seg_arr):
     seg_arr1 = np.where(seg_arr==1) # outputs two arrays of [all y's] and [all x's] for class 1: window
     
-    ymax = max(seg_arr1[0])
-    ymin = min(seg_arr1[0])
-    xmax = max(seg_arr1[1])
-    xmin = min(seg_arr1[1])
+    xmax = max(seg_arr1[0])
+    xmin = min(seg_arr1[0])
+    ymax = max(seg_arr1[1])
+    ymin = min(seg_arr1[1])
 
     return xmin, xmax, ymin, ymax 
 
