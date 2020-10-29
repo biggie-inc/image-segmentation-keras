@@ -97,8 +97,8 @@ def concat_lenends(seg_img, legend_img):
     return out_img
 
 #######
-def get_license_xy_min_max(seg_arr):
-    seg_arr2 = np.where(seg_arr==2) # outputs two arrays of [all x's] and [all y's]
+def get_plate_xy_min_max(seg_arr):
+    seg_arr2 = np.where(seg_arr==2) # outputs two arrays of [all y's] and [all x's] for class 2: plate
     
     ymax = max(seg_arr2[0])
     ymin = min(seg_arr2[0])
@@ -106,7 +106,28 @@ def get_license_xy_min_max(seg_arr):
     xmin = min(seg_arr2[1])
 
     return xmin, xmax, ymin, ymax 
-######
+
+def get_window_xy_min_max(seg_arr):
+    seg_arr1 = np.where(seg_arr==1) # outputs two arrays of [all y's] and [all x's] for class 1: window
+    
+    ymax = max(seg_arr1[0])
+    ymin = min(seg_arr1[0])
+    xmax = max(seg_arr1[1])
+    xmin = min(seg_arr1[1])
+
+    return xmin, xmax, ymin, ymax 
+
+def get_window_h_w_centriods(window_xmin, window_xmax, window_ymin, window_ymax, pixels_per_inch):
+    window_width = (window_xmax - window_xmin)/pixels_per_inch
+    window_height = (window_ymax - window_ymin)/pixels_per_inch
+    w_center = (window_xmax + window_xmin)/2
+    h_center = (window_ymax + window_ymin)/2
+    return window_height, window_width, h_center, w_center
+
+def get_pixels_per_inch(plate_xmin, plate_xmax):
+    pixels_per_inch = (plate_xmax - plate_xmin)/12 # all license plates are 12" wide
+    return pixels_per_inch
+#######
 
 def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
                            colors=class_colors, class_names=None,
@@ -117,15 +138,27 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
         n_classes = np.max(seg_arr)
 
     #####
-    xmin, xmax, ymin, ymax = get_license_xy_min_max(seg_arr)
+    plate_xmin, plate_xmax, plate_ymin, plate_ymax = get_plate_xy_min_max(seg_arr)
+    pixels_per_inch = get_pixels_per_inch(plate_xmin, plate_xmax)
+    window_xmin, window_xmax, window_ymin, window_ymax = get_window_xy_min_max(seg_arr)
+    window_height, window_width, h_center, w_center = get_window_h_w_centriods(window_xmin, window_xmax, window_ymin, window_ymax, pixels_per_inch)
+
     #####
 
     seg_img = get_colored_segmentation_image(seg_arr, n_classes, colors=colors)
 
     #####
-    cv2.rectangle(seg_img, (xmin, ymin), (xmax, ymax),
-                      (0,255,0), 2)
+    # plot plate rect
+    cv2.rectangle(seg_img, (plate_xmin, plate_ymin), (plate_xmax, plate_ymax),
+                      (0,0,255), 2)
+    # add window dimensions
+    cv2.putText(seg_img, f'Window Height: {window_height}', (w_center, (window_ymin - 5)),
+                    cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 0), 1)
+    cv2.putText(seg_img, f'Window Width: {window_width}', (w_center, (window_ymax + 5)),
+                    cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 0), 1)
     #####
+
+    # resizes the seg_img to original image size
     if inp_img is not None:
         orininal_h = inp_img.shape[0]
         orininal_w = inp_img.shape[1]
@@ -178,20 +211,11 @@ def predict(model=None, inp=None, out_fname=None,
     # x appears to be a normalized output
     pr = model.predict(np.array([x]))[0]
     pr = pr.reshape((output_height,  output_width, n_classes)).argmax(axis=2)
-    # pr is the pixel-wise class output each pixel = 0,1,2
+    # pr is the pixel-wise class output = 0,1,2
 
 
     #############################
     # any print statements here #
-    #img_pts = [(x,y) for y in range(inp.shape[0]) for x in range(inp.shape[1])]
-    pr2 = np.where(pr==2) # outputs two arrays of [all x's] and [all y's]
-    print(f'x max: {max(pr2[0])}, x min: {min(pr2[0])}, y max: {max(pr2[1])}, y min: {min(pr2[1])}')
-    #pr2_coords = [(x,y) for x in pr2[0] for y in pr2[1]]
-    #print(f'coords: {pr2_coords}')
-    # plate_array_path = mplPath.Path(pr2)
-    # plate_points = window_array_path.contains_points(img_pts, radius=0.1)
-    # print(f'plate points: {plate_points}')
-    # plate_binary = np.array(window_points.reshape(image.shape[0],image.shape[1]), dtype='uint8')
     #############################
 
     seg_img = visualize_segmentation(pr, inp, n_classes=n_classes,
@@ -203,16 +227,12 @@ def predict(model=None, inp=None, out_fname=None,
     # seg_img: per-pixel [R,G,B] output
 
     #######
-    # rect around license plate
-    cv2.rectangle(seg_img, (min(pr2[0]), min(pr2[1])), (max(pr2[0]), max(pr2[1])),
-                      (0,255,0), 2)
+
     #######
 
 
     if out_fname is not None:
-        cv2.imwrite(out_fname, seg_img)
-        #cv2.imwrite('/content/predictions/plate_binary.png', plate_binary)
-    
+        cv2.imwrite(out_fname, seg_img)    
 
 
     return pr
