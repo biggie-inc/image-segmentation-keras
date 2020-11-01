@@ -114,6 +114,7 @@ def get_window_xy_min_max(seg_arr):
     ymin = min(seg_arr1[0])
     xmax = max(seg_arr1[1])
     xmin = min(seg_arr1[1])
+    np.savetxt('y1_x1_y2_x2.txt', (ymin,xmin,ymax,xmax), delimiter=',')
 
     return xmin, xmax, ymin, ymax 
 
@@ -234,11 +235,10 @@ def predict(model=None, inp=None, out_fname=None,
     #######
 
     #######
-
-
+    
     if out_fname is not None:
         cv2.imwrite(out_fname, seg_img)
-        cv2.imwrite(f'pr_{out_fname}', pr_img)      
+        np.savetxt('pr.txt', pr, delimiter=',')
 
 
     return pr
