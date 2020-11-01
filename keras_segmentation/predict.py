@@ -114,7 +114,7 @@ def get_window_xy_min_max(seg_arr):
     ymin = min(seg_arr1[0])
     xmax = max(seg_arr1[1])
     xmin = min(seg_arr1[1])
-    np.savetxt('y1_x1_y2_x2.txt', (ymin,xmin,ymax,xmax), delimiter=',')
+    np.savetxt('y1_x1_y2_x2.txt', (ymin,xmin,ymax,xmax), delimiter=',', fmt='i')
 
     return xmin, xmax, ymin, ymax 
 
@@ -133,7 +133,7 @@ def get_window_h_w_centriods(window_xmin, window_xmax, window_ymin, window_ymax,
 
 def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
                            colors=class_colors, class_names=None,
-                           overlay_img=True, show_legends=False,
+                           overlay_img=False, show_legends=False,
                            prediction_width=None, prediction_height=None):
 
     if n_classes is None:
@@ -190,7 +190,7 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
 
 
 def predict(model=None, inp=None, out_fname=None,
-            checkpoints_path=None, overlay_img=True,
+            checkpoints_path=None, overlay_img=False,
             class_names=None, show_legends=False, colors=class_colors,
             prediction_width=None, prediction_height=None):
 
@@ -219,6 +219,10 @@ def predict(model=None, inp=None, out_fname=None,
     pr = pr.reshape((output_height,  output_width, n_classes)).argmax(axis=2)
     # pr is the pixel-wise class output = 0,1,2
 
+    #####
+    pr = cv2.resize(pr, (inp.shape[0], inp.shape[1])) # back to actual size
+    #####
+
 
     #############################
     # any print statements here #
@@ -235,17 +239,17 @@ def predict(model=None, inp=None, out_fname=None,
     #######
 
     #######
-    
+
     if out_fname is not None:
         cv2.imwrite(out_fname, seg_img)
-        np.savetxt('pr.txt', pr, delimiter=',')
+        np.savetxt('pr.txt', pr, delimiter=',', fmt='i')
 
 
     return pr
 
 
 def predict_multiple(model=None, inps=None, inp_dir=None, out_dir=None,
-                     checkpoints_path=None, overlay_img=True,
+                     checkpoints_path=None, overlay_img=False,
                      class_names=None, show_legends=False, colors=class_colors,
                      prediction_width=None, prediction_height=None):
 
@@ -295,7 +299,7 @@ def set_video(inp, video_name):
 
 
 def predict_video(model=None, inp=None, output=None,
-                  checkpoints_path=None, display=False, overlay_img=True,
+                  checkpoints_path=None, display=False, overlay_img=False,
                   class_names=None, show_legends=False, colors=class_colors,
                   prediction_width=None, prediction_height=None):
 
