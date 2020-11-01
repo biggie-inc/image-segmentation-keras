@@ -237,7 +237,8 @@ def predict(model=None, inp=None, out_fname=None,
 
 
     if out_fname is not None:
-        cv2.imwrite(out_fname, seg_img)    
+        cv2.imwrite(out_fname, seg_img)
+        cv2.imwrite(f'pr_{out_fname}', pr_img)      
 
 
     return pr
