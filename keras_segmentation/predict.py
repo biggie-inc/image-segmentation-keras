@@ -114,6 +114,7 @@ def get_window_xy_min_max(seg_arr):
     ymin = min(seg_arr1[0])
     xmax = max(seg_arr1[1])
     xmin = min(seg_arr1[1])
+    
     np.savetxt('y1_x1_y2_x2.txt', (ymin,xmin,ymax,xmax), delimiter=',', fmt='i')
 
     return xmin, xmax, ymin, ymax 
@@ -151,8 +152,8 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
 
     #####
     # plot plate rect
-    # cv2.rectangle(seg_img, (plate_xmin, plate_ymin), (plate_xmax, plate_ymax),
-    #                   (0,0,255), 2)
+    cv2.rectangle(seg_img, (plate_xmin, plate_ymin), (plate_xmax, plate_ymax), (0,0,255), 2)
+
     # add window dimensions
     cv2.putText(seg_img, f'Window Height: {window_height}', (int(window_xmin), int(window_ymin - 8)),
                     cv2.FONT_HERSHEY_DUPLEX, .25, (0, 0, 0), 1)
@@ -220,7 +221,7 @@ def predict(model=None, inp=None, out_fname=None,
     # pr is the pixel-wise class output = 0,1,2
 
     #####
-    pr = cv2.resize(pr, (inp.shape[0], inp.shape[1])) # back to actual size
+    pr_resized_output = cv2.resize(pr, (inp.shape[1], inp.shape[0])) # back to actual size
     #####
 
 
@@ -242,7 +243,7 @@ def predict(model=None, inp=None, out_fname=None,
 
     if out_fname is not None:
         cv2.imwrite(out_fname, seg_img)
-        np.savetxt('pr.txt', pr, delimiter=',', fmt='i')
+        np.savetxt('pr.txt', pr_resized_output, delimiter=',', fmt='i')
 
 
     return pr
