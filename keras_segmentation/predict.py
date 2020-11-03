@@ -179,7 +179,7 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
     window_height, window_width, h_center, w_center = get_window_h_w_centriods(window_xmin, window_xmax, window_ymin, window_ymax, pixels_per_inch)
 
     window_img, theta = get_theta(inp_img, [window_ymin, window_xmin, window_ymax, window_xmax])
-    hyp = window_img.shape[0] / np.cos(theta)
+    hyp = window_img.height / np.cos(theta)
 
     plate_width2 = plate_xmax - plate_xmin
     plate_height2 = plate_width2 / 2                
