@@ -221,12 +221,14 @@ def predict(model=None, inp=None, out_fname=None,
     # pr is the pixel-wise class output = 0,1,2
 
     #####
-    pr_resized_output = cv2.resize(pr, (inp.shape[1], inp.shape[0])) # back to actual size
+
     #####
 
 
     #############################
     # any print statements here #
+    print(f'input image shape: {inp.shape}')
+    #pr_resized_output = cv2.resize(pr, (inp.shape[1], inp.shape[0])) # back to actual size
     #############################
 
     seg_img = visualize_segmentation(pr, inp, n_classes=n_classes,
@@ -243,7 +245,7 @@ def predict(model=None, inp=None, out_fname=None,
 
     if out_fname is not None:
         cv2.imwrite(out_fname, seg_img)
-        np.savetxt('pr.txt', pr_resized_output, delimiter=',', fmt='i')
+        #np.savetxt('pr.txt', pr_resized_output, delimiter=',', fmt='i')
 
 
     return pr
