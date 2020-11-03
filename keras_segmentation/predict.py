@@ -44,8 +44,13 @@ def model_from_checkpoint_path(checkpoints_path):
 def get_colored_segmentation_image(seg_arr, n_classes, colors=class_colors):
     output_height = seg_arr.shape[0]
     output_width = seg_arr.shape[1]
+    
 
     seg_img = np.zeros((output_height, output_width, 3))
+    #####
+    print(f'seg_arr shape: {seg_arr.shape}')
+    print(f'seg_img shape: {seg_img.shape}')
+    #####
 
     for c in range(n_classes):
         seg_arr_c = seg_arr[:, :] == c
@@ -115,7 +120,7 @@ def get_window_xy_min_max(seg_arr):
     xmax = max(seg_arr1[1])
     xmin = min(seg_arr1[1])
     
-    np.savetxt('y1_x1_y2_x2.txt', (ymin,xmin,ymax,xmax), delimiter=',', fmt='i')
+    np.savetxt('y1_x1_y2_x2.txt', (ymin,xmin,ymax,xmax), delimiter=',', fmt='%i')
 
     return xmin, xmax, ymin, ymax 
 
@@ -170,6 +175,9 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
         orininal_h = inp_img.shape[0]
         orininal_w = inp_img.shape[1]
         seg_img = cv2.resize(seg_img, (orininal_w, orininal_h))
+        #####
+        print(f'seg_image after resize: {seg_img}')
+        #####
 
     if (prediction_height is not None) and (prediction_width is not None):
         seg_img = cv2.resize(seg_img, (prediction_width, prediction_height))
@@ -228,6 +236,7 @@ def predict(model=None, inp=None, out_fname=None,
     #############################
     # any print statements here #
     print(f'input image shape: {inp.shape}')
+    print(f'pr shape: {pr.shape}')
     #pr_resized_output = cv2.resize(pr, (inp.shape[1], inp.shape[0])) # back to actual size
     #############################
 
@@ -245,7 +254,7 @@ def predict(model=None, inp=None, out_fname=None,
 
     if out_fname is not None:
         cv2.imwrite(out_fname, seg_img)
-        #np.savetxt('pr.txt', pr_resized_output, delimiter=',', fmt='i')
+        #np.savetxt('pr.txt', pr_resized_output, delimiter=',', fmt='%i')
 
 
     return pr
