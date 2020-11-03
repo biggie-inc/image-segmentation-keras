@@ -234,15 +234,18 @@ def predict(model=None, inp=None, out_fname=None,
     np.savetxt('pr.txt', pr, delimiter=',', fmt='%i')
     print(f'input image shape: {inp.shape}')
     print(f'pr shape: {pr.shape}')
-    print(f'pr reshape shape: {pr_reshape.shape}')
-    print(f'pr_resized shape: {pr_resized}')
+    
     #pr_resized_output = cv2.resize(pr, (inp.shape[1], inp.shape[0])) # back to actual size
     #############################
     
     
     pr_reshape = pr.reshape((output_height, output_width, 1))
     pr_resized = cv2.resize(pr_reshape, dsize=(inp.shape[1], inp.shape[0]), interpolation=cv2.INTER_CUBIC)
+    
+    print(f'pr reshape shape: {pr_reshape.shape}')
+    print(f'pr_resized shape: {pr_resized}')
     #####
+
     
 
     seg_img = visualize_segmentation(pr, inp, n_classes=n_classes,
