@@ -196,14 +196,14 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
     cv2.rectangle(seg_img, (plate_xmin, plate_ymin), (plate_xmax, plate_ymax), (0,0,255), 2)
 
     # add window dimensions
-    cv2.putText(seg_img, f'Window Height: {window_height} \n Window Height w/ Hyp: {window_height2} ', (int(window_xmin), int(window_ymin - 8)),
-                    cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 0), 1)
-    cv2.putText(seg_img, f'Window Width: {window_width} \n Window Width w/ Hyp: {window_width2}', (int(window_xmin), int(window_ymax + 8)),
-                    cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 0), 1)
-    cv2.circle(seg_img, (w_center, window_ymax), 2, (0,255,0))
+    cv2.putText(seg_img, f'Window Height: {window_height:.3f}  Window Height w/ Hyp: {window_height2:.3f} ', (int(window_xmin), int(window_ymin - 8)),
+                    cv2.FONT_HERSHEY_DUPLEX, .5, (0, 0, 0), 1)
+    cv2.putText(seg_img, f'Window Width: {window_width}  Window Width w/ Hyp: {window_width2}', (int(window_xmin), int(window_ymax + 8)),
+                    cv2.FONT_HERSHEY_DUPLEX, .5, (0, 0, 0), 1)
+    cv2.circle(seg_img, (w_center, window_ymax), 2, (255,255,255))
     cv2.circle(seg_img, (window_xmin, h_center), 2, (255,235,5))
-    cv2.circle(seg_img, (int((plate_xmax + plate_xmin)/2), plate_ymin), 2, (0,255,0))
-    cv2.circle(seg_img, (plate_xmin, int((plate_ymax + plate_ymin)/2)), 2, (0,0,255))
+    cv2.circle(seg_img, (int((plate_xmax + plate_xmin)/2), plate_ymin), 2, (255,255,255))
+    cv2.circle(seg_img, (plate_xmin, int((plate_ymax + plate_ymin)/2)), 2, (255,235,5))
     #####
 
     # resizes the seg_img to original image size
