@@ -165,7 +165,7 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
     cv2.putText(seg_img, f'Window Width: {window_width}', (int(window_xmin), int(window_ymax + 8)),
                     cv2.FONT_HERSHEY_DUPLEX, .25, (0, 0, 0), 1)
     cv2.circle(seg_img, (w_center, window_ymax), 2, (0,255,0))
-    cv2.circle(seg_img, (window_xmin, h_center), 2, (0,0,255))
+    cv2.circle(seg_img, (window_xmin, h_center), 2, (255,235,5))
     cv2.circle(seg_img, (int((plate_xmax + plate_xmin)/2), plate_ymin), 2, (0,255,0))
     cv2.circle(seg_img, (plate_xmin, int((plate_ymax + plate_ymin)/2)), 2, (0,0,255))
     #####
@@ -231,24 +231,19 @@ def predict(model=None, inp=None, out_fname=None,
     #####
     #############################
     # any print statements here #
-    np.savetxt('pr.txt', pr, delimiter=',', fmt='%i')
-    print(f'input image shape: {inp.shape}')
-    print(f'pr shape: {pr.shape}')
-    
-    #pr_resized_output = cv2.resize(pr, (inp.shape[1], inp.shape[0])) # back to actual size
+    # np.savetxt('pr.txt', pr, delimiter=',', fmt='%i')
+    # print(f'input image shape: {inp.shape}')
+    # print(f'pr shape: {pr.shape}')
     #############################
     
     
     pr_reshape = pr.reshape((output_height, output_width, 1)).astype('uint8')
-    pr_resized = cv2.resize(pr_reshape, dsize=(inp.shape[1], inp.shape[0]), interpolation=cv2.INTER_CUBIC)
-    
-    print(f'pr reshape shape: {pr_reshape.shape}')
-    print(f'pr_resized shape: {pr_resized}')
+    pr_resized = cv2.resize(pr_reshape, dsize=(inp.shape[1], inp.shape[0]), interpolation=cv2.INTER_CUBIC) #(960,1280,1)
     #####
 
     
 
-    seg_img = visualize_segmentation(pr, inp, n_classes=n_classes,
+    seg_img = visualize_segmentation(pr_resized, inp, n_classes=n_classes,
                                      colors=colors, overlay_img=overlay_img,
                                      show_legends=show_legends,
                                      class_names=class_names,
