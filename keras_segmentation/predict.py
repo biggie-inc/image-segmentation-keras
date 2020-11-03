@@ -5,9 +5,7 @@ import os
 import six
 
 ###
-import matplotlib.path as mplPath
-import matplotlib.pyplot as plt
-from matplotlib.patches import Polygon
+import tensorflow as tf
 ###
 
 import cv2
@@ -102,6 +100,35 @@ def concat_lenends(seg_img, legend_img):
     return out_img
 
 #######
+
+def get_cropped(img, coord): # coords[y1, x1, y2, x2] https://github.com/matterport/Mask_RCNN/blob/master/mrcnn/model.py line 2482
+    offset_height, offset_width, target_height, target_width = coord
+    x = tf.image.crop_to_bounding_box(
+        np.float32(img), offset_height, offset_width, target_height-offset_height, target_width-offset_width
+    )
+
+    return tf.keras.preprocessing.image.array_to_img(
+        x, data_format=None, scale=True, dtype=None
+    )
+
+def get_theta(img,roi):
+    window_img = get_cropped(img, roi)
+    print('h', window_img.height, 'w', window_img.width)
+    a = 0
+    b = 0
+    for i in range(window_img.height):
+        if np.mean(window_img.getpixel((i,0))) < 250:
+            print(i, window_img.getpixel((i,0)))
+            a = i
+            break
+    for i in range(window_img.width):
+        if np.mean(window_img.getpixel((0,i))) < 250:
+            print(i, window_img.getpixel((0,i)))
+            b = i
+            break
+    print('a',a,'b',b)
+    return window_img, np.arctan(a/b)
+
 def get_plate_xy_min_max(seg_arr):
     seg_arr2 = np.where(seg_arr==2) # outputs two arrays of [all y's] and [all x's] for class 2: plate
     
@@ -151,6 +178,15 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
     window_xmin, window_xmax, window_ymin, window_ymax = get_window_xy_min_max(seg_arr)
     window_height, window_width, h_center, w_center = get_window_h_w_centriods(window_xmin, window_xmax, window_ymin, window_ymax, pixels_per_inch)
 
+    window_img, theta = get_theta(inp_img, [window_ymin, window_xmin, window_ymax, window_xmax])
+    hyp = window_img.shape[0] / np.cos(theta)
+
+    plate_width2 = plate_xmax - plate_xmin
+    plate_height2 = plate_width2 / 2                
+    window_height2 = (hyp / plate_height2)  * 7.0
+    window_width2 = ((window_xmax - window_xmin) / plate_width2) * 12.0
+    print(f"Visible rear window: {window_width2}w X {window_height2}h")
+
     #####
 
     seg_img = get_colored_segmentation_image(seg_arr, n_classes, colors=colors)
@@ -160,10 +196,10 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
     cv2.rectangle(seg_img, (plate_xmin, plate_ymin), (plate_xmax, plate_ymax), (0,0,255), 2)
 
     # add window dimensions
-    cv2.putText(seg_img, f'Window Height: {window_height}', (int(window_xmin), int(window_ymin - 8)),
-                    cv2.FONT_HERSHEY_DUPLEX, .25, (0, 0, 0), 1)
-    cv2.putText(seg_img, f'Window Width: {window_width}', (int(window_xmin), int(window_ymax + 8)),
-                    cv2.FONT_HERSHEY_DUPLEX, .25, (0, 0, 0), 1)
+    cv2.putText(seg_img, f'Window Height: {window_height} \n Window Height w/ Hyp: {window_height2} ', (int(window_xmin), int(window_ymin - 8)),
+                    cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 0), 1)
+    cv2.putText(seg_img, f'Window Width: {window_width} \n Window Width w/ Hyp: {window_width2}', (int(window_xmin), int(window_ymax + 8)),
+                    cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 0), 1)
     cv2.circle(seg_img, (w_center, window_ymax), 2, (0,255,0))
     cv2.circle(seg_img, (window_xmin, h_center), 2, (255,235,5))
     cv2.circle(seg_img, (int((plate_xmax + plate_xmin)/2), plate_ymin), 2, (0,255,0))
