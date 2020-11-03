@@ -176,7 +176,7 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
         orininal_w = inp_img.shape[1]
         seg_img = cv2.resize(seg_img, (orininal_w, orininal_h))
         #####
-        print(f'seg_image after resize: {seg_img}')
+        print(f'seg_image after resize: {seg_img.shape}')
         #####
 
     if (prediction_height is not None) and (prediction_width is not None):
