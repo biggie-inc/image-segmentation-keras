@@ -239,8 +239,8 @@ def predict(model=None, inp=None, out_fname=None,
     #############################
     
     
-    pr_reshape = pr.reshape((output_height, output_width, 1))
-    pr_resized = cv2.resize(pr_reshape, dsize=(inp.shape[1], inp.shape[0]), interpolation=cv2.INTER_CUBIC).astype('uint8')
+    pr_reshape = pr.reshape((output_height, output_width, 1)).astype('uint8')
+    pr_resized = cv2.resize(pr_reshape, dsize=(inp.shape[1], inp.shape[0]), interpolation=cv2.INTER_CUBIC)
     
     print(f'pr reshape shape: {pr_reshape.shape}')
     print(f'pr_resized shape: {pr_resized}')
