@@ -112,7 +112,7 @@ def get_cropped(img, coord): # coords[y1, x1, y2, x2] https://github.com/matterp
 
 def get_theta(img,roi):
     window_img = get_cropped(img, roi)
-    print('h', window_img.height, 'w', window_img.width)
+    # print('h', window_img.height, 'w', window_img.width)
     a = 0
     b = 0
     for i in range(window_img.height):
@@ -125,7 +125,7 @@ def get_theta(img,roi):
             print(i, window_img.getpixel((0,i)))
             b = i
             break
-    print('a',a,'b',b)
+    # print('a',a,'b',b)
     return window_img, np.arctan(a/b)
 
 
@@ -148,7 +148,7 @@ def get_window_xy_min_max(seg_arr):
     xmax = max(seg_arr1[1])
     xmin = min(seg_arr1[1])
     
-    np.savetxt('y1_x1_y2_x2.txt', (ymin,xmin,ymax,xmax), delimiter=',', fmt='%i')
+    # np.savetxt('y1_x1_y2_x2.txt', (ymin,xmin,ymax,xmax), delimiter=',', fmt='%i')
 
     return xmin, xmax, ymin, ymax 
 
