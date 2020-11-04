@@ -20,9 +20,9 @@ from .augmentation import augment_seg
 DATA_LOADER_SEED = 0
 
 random.seed(DATA_LOADER_SEED)
-class_colors = [(random.randint(0, 255), random.randint(
-    0, 255), random.randint(0, 255)) for _ in range(5000)]
-
+# class_colors = [(random.randint(0, 255), random.randint(
+#     0, 255), random.randint(0, 255)) for _ in range(5000)]
+class_colors = [(144, 128, 112), (0, 184, 24), (116, 0, 184)] #background, window, plate colors
 
 class DataLoaderError(Exception):
     pass

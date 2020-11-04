@@ -4,6 +4,10 @@ import json
 import os
 import six
 
+###
+import tensorflow as tf
+###
+
 import cv2
 import numpy as np
 from tqdm import tqdm
@@ -38,8 +42,13 @@ def model_from_checkpoint_path(checkpoints_path):
 def get_colored_segmentation_image(seg_arr, n_classes, colors=class_colors):
     output_height = seg_arr.shape[0]
     output_width = seg_arr.shape[1]
+    
 
     seg_img = np.zeros((output_height, output_width, 3))
+    #####
+    # print(f'seg_arr shape: {seg_arr.shape}')
+    # print(f'seg_img shape: {seg_img.shape}')
+    #####
 
     for c in range(n_classes):
         seg_arr_c = seg_arr[:, :] == c
@@ -90,17 +99,114 @@ def concat_lenends(seg_img, legend_img):
 
     return out_img
 
+#######
+def get_cropped(img, coord): # coords[y1, x1, y2, x2] https://github.com/matterport/Mask_RCNN/blob/master/mrcnn/model.py line 2482
+    offset_height, offset_width, target_height, target_width = coord
+    x = tf.image.crop_to_bounding_box(
+        np.float32(img), offset_height, offset_width, target_height-offset_height, target_width-offset_width
+    )
+
+    return tf.keras.preprocessing.image.array_to_img(
+        x, data_format=None, scale=True, dtype=None
+    )
+
+def get_theta(img,roi):
+    window_img = get_cropped(img, roi)
+    # print('h', window_img.height, 'w', window_img.width)
+    a = 0
+    b = 0
+    for i in range(window_img.height):
+        if np.mean(window_img.getpixel((i,0))) < 250:
+            print(i, window_img.getpixel((i,0)))
+            a = i
+            break
+    for i in range(window_img.width):
+        if np.mean(window_img.getpixel((0,i))) < 250:
+            print(i, window_img.getpixel((0,i)))
+            b = i
+            break
+    # print('a',a,'b',b)
+    return window_img, np.arctan(a/b)
+
+
+def get_plate_xy_min_max(seg_arr):
+    seg_arr2 = np.where(seg_arr==2) # outputs two arrays of [all y's] and [all x's] for class 2: plate
+    
+    ymax = max(seg_arr2[0])
+    ymin = min(seg_arr2[0])
+    xmax = max(seg_arr2[1])
+    xmin = min(seg_arr2[1])
+
+    return xmin, xmax, ymin, ymax 
+
+
+def get_window_xy_min_max(seg_arr):
+    seg_arr1 = np.where(seg_arr==1) # outputs two arrays of [all y's] and [all x's] for class 1: window
+    
+    ymax = max(seg_arr1[0])
+    ymin = min(seg_arr1[0])
+    xmax = max(seg_arr1[1])
+    xmin = min(seg_arr1[1])
+    
+    # np.savetxt('y1_x1_y2_x2.txt', (ymin,xmin,ymax,xmax), delimiter=',', fmt='%i')
+
+    return xmin, xmax, ymin, ymax 
+
+
+def get_pixels_per_inch(plate_xmin, plate_xmax):
+    pixels_per_inch = (plate_xmax - plate_xmin)/12 # all license plates are 12" wide
+    return pixels_per_inch
+
+
+def get_window_h_w_centriods(window_xmin, window_xmax, window_ymin, window_ymax, pixels_per_inch):
+    window_width = (window_xmax - window_xmin)/pixels_per_inch
+    window_height = (window_ymax - window_ymin)/pixels_per_inch
+    w_center = int((window_xmax + window_xmin)/2)
+    h_center = int((window_ymax + window_ymin)/2)
+    return window_height, window_width, h_center, w_center
+#######
 
 def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
                            colors=class_colors, class_names=None,
-                           overlay_img=True, show_legends=True,
+                           overlay_img=False, show_legends=False,
                            prediction_width=None, prediction_height=None):
 
     if n_classes is None:
         n_classes = np.max(seg_arr)
 
+    #####
+    plate_xmin, plate_xmax, plate_ymin, plate_ymax = get_plate_xy_min_max(seg_arr)
+    pixels_per_inch = get_pixels_per_inch(plate_xmin, plate_xmax)
+    window_xmin, window_xmax, window_ymin, window_ymax = get_window_xy_min_max(seg_arr)
+    window_height, window_width, h_center, w_center = get_window_h_w_centriods(window_xmin, window_xmax, window_ymin, window_ymax, pixels_per_inch)
+
+    window_img, theta = get_theta(inp_img, [window_ymin, window_xmin, window_ymax, window_xmax])
+    hyp = window_img.height / np.cos(theta)
+
+    plate_width2 = plate_xmax - plate_xmin
+    plate_height2 = plate_width2 / 2                
+    window_height_adj = (hyp / plate_height2)  * 7.0
+    print(f"Visible rear window: {window_width}w X {window_height_adj}h")
+    #####
+
     seg_img = get_colored_segmentation_image(seg_arr, n_classes, colors=colors)
 
+    #####
+    # plot plate rect
+    #cv2.rectangle(seg_img, (plate_xmin, plate_ymin), (plate_xmax, plate_ymax), (0,0,255), 2)
+
+    # add window dimensions
+    cv2.putText(seg_img, f'Window Height: {window_height_adj:.3f} ', (int(window_xmin), int(window_ymin - 8)),
+                    cv2.FONT_HERSHEY_DUPLEX, .5, (0, 0, 0), 1)
+    cv2.putText(seg_img, f'Window Width: {window_width:.3f}', (int(window_xmin), int(window_ymax + 8)),
+                    cv2.FONT_HERSHEY_DUPLEX, .5, (0, 0, 0), 1)
+    cv2.circle(seg_img, (w_center, window_ymax), 2, (255,255,255))
+    cv2.circle(seg_img, (window_xmin, h_center), 2, (255,235,5))
+    cv2.circle(seg_img, (int((plate_xmax + plate_xmin)/2), plate_ymin), 2, (255,255,255))
+    cv2.circle(seg_img, (plate_xmin, int((plate_ymax + plate_ymin)/2)), 2, (255,235,5))
+    #####
+
+    # resizes the seg_img to original image size
     if inp_img is not None:
         orininal_h = inp_img.shape[0]
         orininal_w = inp_img.shape[1]
@@ -126,8 +232,8 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
 
 
 def predict(model=None, inp=None, out_fname=None,
-            checkpoints_path=None, overlay_img=True,
-            class_names=None, show_legends=True, colors=class_colors,
+            checkpoints_path=None, overlay_img=False,
+            class_names=None, show_legends=False, colors=class_colors,
             prediction_width=None, prediction_height=None):
 
     if model is None and (checkpoints_path is not None):
@@ -137,7 +243,10 @@ def predict(model=None, inp=None, out_fname=None,
     assert ((type(inp) is np.ndarray) or isinstance(inp, six.string_types)),\
         "Input should be the CV image or the input file name"
 
+    
+
     if isinstance(inp, six.string_types):
+        filename = inp.split("/")[-1].split(".")[0]
         inp = cv2.imread(inp)
 
     assert len(inp.shape) == 3, "Image should be h,w,3 "
@@ -150,29 +259,50 @@ def predict(model=None, inp=None, out_fname=None,
 
     x = get_image_array(inp, input_width, input_height,
                         ordering=IMAGE_ORDERING)
+    # x appears to be a normalized output
     pr = model.predict(np.array([x]))[0]
     pr = pr.reshape((output_height,  output_width, n_classes)).argmax(axis=2)
+    # pr is the pixel-wise class output = 0,1,2
 
-    seg_img = visualize_segmentation(pr, inp, n_classes=n_classes,
+    #####
+    #############################
+    # any print statements here #
+    # np.savetxt('pr.txt', pr, delimiter=',', fmt='%i')
+    # print(f'input image shape: {inp.shape}')
+    # print(f'pr shape: {pr.shape}')
+    #############################
+    
+    
+    pr_reshape = pr.reshape((output_height, output_width, 1)).astype('uint8')
+    pr_resized = cv2.resize(pr_reshape, dsize=(inp.shape[1], inp.shape[0]), interpolation=cv2.INTER_NEAREST) #(960,1280,1)
+    #np.savetxt('pr_resized.txt', pr_resized, delimiter=',', fmt='%i')
+    #####
+
+    
+
+    seg_img = visualize_segmentation(pr_resized, inp, n_classes=n_classes,
                                      colors=colors, overlay_img=overlay_img,
                                      show_legends=show_legends,
                                      class_names=class_names,
                                      prediction_width=prediction_width,
                                      prediction_height=prediction_height)
+    # seg_img: per-pixel [R,G,B] output
 
-    if out_fname is not None:
+    if out_fname is None:
+        try:
+            cv2.imwrite(f'./predictions/{filename}__pred.png', seg_img)
+        except:
+            cv2.imwrite(f'./predictions/test__pred.png', seg_img)
+    else:
         cv2.imwrite(out_fname, seg_img)
     
-    ############################
-    print(np.unique(pr))
-    ###########################
 
     return pr
 
 
 def predict_multiple(model=None, inps=None, inp_dir=None, out_dir=None,
-                     checkpoints_path=None, overlay_img=True,
-                     class_names=None, show_legends=True, colors=class_colors,
+                     checkpoints_path=None, overlay_img=False,
+                     class_names=None, show_legends=False, colors=class_colors,
                      prediction_width=None, prediction_height=None):
 
     if model is None and (checkpoints_path is not None):
@@ -221,7 +351,7 @@ def set_video(inp, video_name):
 
 
 def predict_video(model=None, inp=None, output=None,
-                  checkpoints_path=None, display=False, overlay_img=True,
+                  checkpoints_path=None, display=False, overlay_img=False,
                   class_names=None, show_legends=False, colors=class_colors,
                   prediction_width=None, prediction_height=None):
 
