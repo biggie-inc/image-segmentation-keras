@@ -243,7 +243,10 @@ def predict(model=None, inp=None, out_fname=None,
     assert ((type(inp) is np.ndarray) or isinstance(inp, six.string_types)),\
         "Input should be the CV image or the input file name"
 
+    
+
     if isinstance(inp, six.string_types):
+        filename = inp.split("/")[-1].split(".")[0]
         inp = cv2.imread(inp)
 
     assert len(inp.shape) == 3, "Image should be h,w,3 "
@@ -285,10 +288,14 @@ def predict(model=None, inp=None, out_fname=None,
                                      prediction_height=prediction_height)
     # seg_img: per-pixel [R,G,B] output
 
-    if out_fname is not None:
+    if out_fname is None:
+        try:
+            cv2.imwrite(f'./predictions/{filename}__pred.png', seg_img)
+        except:
+            cv2.imwrite(f'./predictions/test__pred.png', seg_img)
+    else:
         cv2.imwrite(out_fname, seg_img)
-    elif out_fname is None:
-        cv2.imwrite(f'{inp.split("/")[-1].split(".")[0]}__pred.png', seg_img)
+    
 
     return pr
 
