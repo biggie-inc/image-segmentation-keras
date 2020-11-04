@@ -46,8 +46,8 @@ def get_colored_segmentation_image(seg_arr, n_classes, colors=class_colors):
 
     seg_img = np.zeros((output_height, output_width, 3))
     #####
-    print(f'seg_arr shape: {seg_arr.shape}')
-    print(f'seg_img shape: {seg_img.shape}')
+    # print(f'seg_arr shape: {seg_arr.shape}')
+    # print(f'seg_img shape: {seg_img.shape}')
     #####
 
     for c in range(n_classes):
@@ -100,7 +100,6 @@ def concat_lenends(seg_img, legend_img):
     return out_img
 
 #######
-
 def get_cropped(img, coord): # coords[y1, x1, y2, x2] https://github.com/matterport/Mask_RCNN/blob/master/mrcnn/model.py line 2482
     offset_height, offset_width, target_height, target_width = coord
     x = tf.image.crop_to_bounding_box(
@@ -129,6 +128,7 @@ def get_theta(img,roi):
     print('a',a,'b',b)
     return window_img, np.arctan(a/b)
 
+
 def get_plate_xy_min_max(seg_arr):
     seg_arr2 = np.where(seg_arr==2) # outputs two arrays of [all y's] and [all x's] for class 2: plate
     
@@ -138,6 +138,7 @@ def get_plate_xy_min_max(seg_arr):
     xmin = min(seg_arr2[1])
 
     return xmin, xmax, ymin, ymax 
+
 
 def get_window_xy_min_max(seg_arr):
     seg_arr1 = np.where(seg_arr==1) # outputs two arrays of [all y's] and [all x's] for class 1: window
@@ -151,9 +152,11 @@ def get_window_xy_min_max(seg_arr):
 
     return xmin, xmax, ymin, ymax 
 
+
 def get_pixels_per_inch(plate_xmin, plate_xmax):
     pixels_per_inch = (plate_xmax - plate_xmin)/12 # all license plates are 12" wide
     return pixels_per_inch
+
 
 def get_window_h_w_centriods(window_xmin, window_xmax, window_ymin, window_ymax, pixels_per_inch):
     window_width = (window_xmax - window_xmin)/pixels_per_inch
@@ -161,7 +164,6 @@ def get_window_h_w_centriods(window_xmin, window_xmax, window_ymin, window_ymax,
     w_center = int((window_xmax + window_xmin)/2)
     h_center = int((window_ymax + window_ymin)/2)
     return window_height, window_width, h_center, w_center
-
 #######
 
 def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
@@ -183,22 +185,20 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
 
     plate_width2 = plate_xmax - plate_xmin
     plate_height2 = plate_width2 / 2                
-    window_height2 = (hyp / plate_height2)  * 7.0
-    window_width2 = ((window_xmax - window_xmin) / plate_width2) * 12.0
-    print(f"Visible rear window: {window_width2}w X {window_height2}h")
-
+    window_height_adj = (hyp / plate_height2)  * 7.0
+    print(f"Visible rear window: {window_width}w X {window_height_adj}h")
     #####
 
     seg_img = get_colored_segmentation_image(seg_arr, n_classes, colors=colors)
 
     #####
     # plot plate rect
-    cv2.rectangle(seg_img, (plate_xmin, plate_ymin), (plate_xmax, plate_ymax), (0,0,255), 2)
+    #cv2.rectangle(seg_img, (plate_xmin, plate_ymin), (plate_xmax, plate_ymax), (0,0,255), 2)
 
     # add window dimensions
-    cv2.putText(seg_img, f'Window Height: {window_height:.3f}  Window Height w/ Hyp: {window_height2:.3f} ', (int(window_xmin), int(window_ymin - 8)),
+    cv2.putText(seg_img, f'Window Height: {window_height_adj:.3f} ', (int(window_xmin), int(window_ymin - 8)),
                     cv2.FONT_HERSHEY_DUPLEX, .5, (0, 0, 0), 1)
-    cv2.putText(seg_img, f'Window Width: {window_width}  Window Width w/ Hyp: {window_width2}', (int(window_xmin), int(window_ymax + 8)),
+    cv2.putText(seg_img, f'Window Width: {window_width:.3f}', (int(window_xmin), int(window_ymax + 8)),
                     cv2.FONT_HERSHEY_DUPLEX, .5, (0, 0, 0), 1)
     cv2.circle(seg_img, (w_center, window_ymax), 2, (255,255,255))
     cv2.circle(seg_img, (window_xmin, h_center), 2, (255,235,5))
@@ -211,9 +211,6 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
         orininal_h = inp_img.shape[0]
         orininal_w = inp_img.shape[1]
         seg_img = cv2.resize(seg_img, (orininal_w, orininal_h))
-        #####
-        print(f'seg_image after resize: {seg_img.shape}')
-        #####
 
     if (prediction_height is not None) and (prediction_width is not None):
         seg_img = cv2.resize(seg_img, (prediction_width, prediction_height))
@@ -275,7 +272,7 @@ def predict(model=None, inp=None, out_fname=None,
     
     pr_reshape = pr.reshape((output_height, output_width, 1)).astype('uint8')
     pr_resized = cv2.resize(pr_reshape, dsize=(inp.shape[1], inp.shape[0]), interpolation=cv2.INTER_NEAREST) #(960,1280,1)
-    np.savetxt('pr_resized.txt', pr_resized, delimiter=',', fmt='%i')
+    #np.savetxt('pr_resized.txt', pr_resized, delimiter=',', fmt='%i')
     #####
 
     
@@ -288,14 +285,10 @@ def predict(model=None, inp=None, out_fname=None,
                                      prediction_height=prediction_height)
     # seg_img: per-pixel [R,G,B] output
 
-    #######
-
-    #######
-
     if out_fname is not None:
         cv2.imwrite(out_fname, seg_img)
-        # np.savetxt('pr.txt', pr, delimiter=',', fmt='%i')
-
+    elif out_fname is None:
+        cv2.imwrite(f'{inp.split("/")[-1].split(".")[0]}__pred.png', seg_img)
 
     return pr
 
