@@ -197,9 +197,9 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
 
     # add window dimensions
     cv2.putText(seg_img, f'Window Height: {window_height_adj:.3f} ', (int(window_xmin), int(window_ymin - 8)),
-                    cv2.FONT_HERSHEY_DUPLEX, .5, (0, 0, 0), 1)
+                    cv2.FONT_HERSHEY_DUPLEX, .75, (0, 0, 0), 1)
     cv2.putText(seg_img, f'Window Width: {window_width:.3f}', (int(window_xmin), int(window_ymax + 8)),
-                    cv2.FONT_HERSHEY_DUPLEX, .5, (0, 0, 0), 1)
+                    cv2.FONT_HERSHEY_DUPLEX, .75, (0, 0, 0), 1)
     cv2.circle(seg_img, (w_center, window_ymax), 2, (255,255,255))
     cv2.circle(seg_img, (window_xmin, h_center), 2, (255,235,5))
     cv2.circle(seg_img, (int((plate_xmax + plate_xmin)/2), plate_ymin), 2, (255,255,255))
@@ -246,7 +246,9 @@ def predict(model=None, inp=None, out_fname=None,
     
 
     if isinstance(inp, six.string_types):
+        #####
         filename = inp.split("/")[-1].split(".")[0]
+        #####
         inp = cv2.imread(inp)
 
     assert len(inp.shape) == 3, "Image should be h,w,3 "
@@ -275,7 +277,7 @@ def predict(model=None, inp=None, out_fname=None,
     
     pr_reshape = pr.reshape((output_height, output_width, 1)).astype('uint8')
     pr_resized = cv2.resize(pr_reshape, dsize=(inp.shape[1], inp.shape[0]), interpolation=cv2.INTER_NEAREST) #(960,1280,1)
-    #np.savetxt('pr_resized.txt', pr_resized, delimiter=',', fmt='%i')
+    np.savetxt('pr_resized.txt', pr_resized, delimiter=',', fmt='%i')
     #####
 
     
