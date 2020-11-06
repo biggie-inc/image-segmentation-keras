@@ -55,6 +55,8 @@ def get_colored_segmentation_image(seg_arr, n_classes, colors=class_colors):
         seg_img[:, :, 0] += ((seg_arr_c)*(colors[c][0])).astype('uint8')
         seg_img[:, :, 1] += ((seg_arr_c)*(colors[c][1])).astype('uint8')
         seg_img[:, :, 2] += ((seg_arr_c)*(colors[c][2])).astype('uint8')
+    
+    cv2.imwrite('init_seg_img.jpg', seg_img)
 
     return seg_img
 
@@ -100,6 +102,17 @@ def concat_lenends(seg_img, legend_img):
     return out_img
 
 #######
+def largest_contours(pr, n_classes):
+    final = np.zeros((960, 1280), dtype='uint8')
+    for i in range(1, n_classes):
+        prediction = pr[:,:] == i
+        prediction = prediction.astype('uint8')
+        contours, _ = cv2.findContours(prediction.copy(),cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
+        largest_contour = sorted(contours, key=cv2.contourArea, reverse= True)[0]
+        cv2.drawContours(final, [largest_contour], -1, i,-1)
+
+    return final
+
 def get_cropped(img, coord): # coords[y1, x1, y2, x2] https://github.com/matterport/Mask_RCNN/blob/master/mrcnn/model.py line 2482
     offset_height, offset_width, target_height, target_width = coord
     x = tf.image.crop_to_bounding_box(
@@ -277,12 +290,12 @@ def predict(model=None, inp=None, out_fname=None,
     
     pr_reshape = pr.reshape((output_height, output_width, 1)).astype('uint8')
     pr_resized = cv2.resize(pr_reshape, dsize=(inp.shape[1], inp.shape[0]), interpolation=cv2.INTER_NEAREST) #(960,1280,1)
-    np.savetxt('pr_resized.txt', pr_resized, delimiter=',', fmt='%i')
+    # np.savetxt('pr_resized.txt', pr_resized, delimiter=',', fmt='%i')
     #####
-
+    pr_main_contours = largest_contours(pr_resized, n_classes)
     
 
-    seg_img = visualize_segmentation(pr_resized, inp, n_classes=n_classes,
+    seg_img = visualize_segmentation(pr_main_contours, inp, n_classes=n_classes,
                                      colors=colors, overlay_img=overlay_img,
                                      show_legends=show_legends,
                                      class_names=class_names,
