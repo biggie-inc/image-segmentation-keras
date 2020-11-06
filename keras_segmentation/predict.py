@@ -195,6 +195,8 @@ def plot_orig_and_overlay(inp, seg_img):
     ax3.axis('off')
 
     plt.tight_layout()
+
+    return fig
 #######
 
 def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
@@ -277,12 +279,11 @@ def predict(model=None, inp=None, out_fname=None,
     assert ((type(inp) is np.ndarray) or isinstance(inp, six.string_types)),\
         "Input should be the CV image or the input file name"
 
-    
+    #####
+    filename = inp.split("/")[-1].split(".")[0]
+    #####
 
     if isinstance(inp, six.string_types):
-        #####
-        filename = inp.split("/")[-1].split(".")[0]
-        #####
         inp = cv2.imread(inp)
 
     assert len(inp.shape) == 3, "Image should be h,w,3 "
@@ -299,16 +300,8 @@ def predict(model=None, inp=None, out_fname=None,
     pr = model.predict(np.array([x]))[0]
     pr = pr.reshape((output_height,  output_width, n_classes)).argmax(axis=2)
     # pr is the pixel-wise class output = 0,1,2
-
+    
     #####
-    #############################
-    # any print statements here #
-    # np.savetxt('pr.txt', pr, delimiter=',', fmt='%i')
-    # print(f'input image shape: {inp.shape}')
-    # print(f'pr shape: {pr.shape}')
-    #############################
-    
-    
     pr_reshape = pr.reshape((output_height, output_width, 1)).astype('uint8')
     pr_resized = cv2.resize(pr_reshape, dsize=(inp.shape[1], inp.shape[0]), interpolation=cv2.INTER_NEAREST) #(960,1280,1)
     # np.savetxt('pr_resized.txt', pr_resized, delimiter=',', fmt='%i')
@@ -325,17 +318,13 @@ def predict(model=None, inp=None, out_fname=None,
     # seg_img returns per-pixel (B,R,G) output
 
     #####
-    plot_orig_and_overlay(inp, seg_img)
+    fig = plot_orig_and_overlay(inp, seg_img, filename)
     #####
 
-    if out_fname is None:
-        try:
-            cv2.imwrite(f'./predictions/{filename}__pred.png', seg_img)
-        except:
-            cv2.imwrite(f'./predictions/test__pred.png', seg_img)
+    if out_fname is not None:
+        cv2.imwrite(out_fname, fig)
     else:
-        cv2.imwrite(out_fname, seg_img)
-    
+        cv2.imwrite(f'./predictions/{filename}__pred.png', fig)
 
     return pr
 
