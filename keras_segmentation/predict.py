@@ -322,9 +322,11 @@ def predict(model=None, inp=None, out_fname=None,
     #####
 
     if out_fname is not None:
-        cv2.imwrite(out_fname, fig)
+        #cv2.imwrite(out_fname, fig)
+        fig.savefig(out_fname, dpi=300)
     else:
-        cv2.imwrite(f'./predictions/{filename}__pred.png', fig)
+        #cv2.imwrite(f'./predictions/{filename}__pred.png', fig)
+        fig.savefig(f'./predictions/{filename}__pred.png', dpi=300)
 
     return pr
 
