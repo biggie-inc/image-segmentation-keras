@@ -315,9 +315,12 @@ def predict(model=None, inp=None, out_fname=None,
                                      class_names=class_names,
                                      prediction_width=prediction_width,
                                      prediction_height=prediction_height)
-    # seg_img returns per-pixel (B,R,G) output
+    # seg_img returns per-pixel (B,G,R) output
 
     #####
+    inp = cv2.cvtColor(inp, cv2.COLOR_BGR2RGB)
+    seg_img = cv2.cvtColor(seg_img, cv2.COLOR_BGR2RGB)
+
     fig = plot_orig_and_overlay(inp, seg_img)
     #####
 
