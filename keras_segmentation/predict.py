@@ -318,7 +318,7 @@ def predict(model=None, inp=None, out_fname=None,
     # seg_img returns per-pixel (B,R,G) output
 
     #####
-    fig = plot_orig_and_overlay(inp, seg_img, filename)
+    fig = plot_orig_and_overlay(inp, seg_img)
     #####
 
     if out_fname is not None:
