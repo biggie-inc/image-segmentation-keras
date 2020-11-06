@@ -6,6 +6,7 @@ import six
 
 ###
 import tensorflow as tf
+import matplotlib.pyplot as plt
 ###
 
 import cv2
@@ -177,6 +178,23 @@ def get_window_h_w_centriods(window_xmin, window_xmax, window_ymin, window_ymax,
     w_center = int((window_xmax + window_xmin)/2)
     h_center = int((window_ymax + window_ymin)/2)
     return window_height, window_width, h_center, w_center
+
+
+def plot_orig_and_overlay(inp, seg_img):
+
+    fig, (ax1, ax2, ax3) = plt.subplots(1,3, figsize=(15,6))
+
+    ax1.imshow(inp)
+    ax1.axis('off')
+
+    ax2.imshow(seg_img)
+    ax2.axis('off')
+
+    ax3.imshow(inp)
+    ax3.imshow(seg_img, alpha=0.6)
+    ax3.axis('off')
+
+    plt.tight_layout()
 #######
 
 def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
@@ -202,7 +220,9 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
     print(f"Visible rear window: {window_width}w X {window_height_adj}h")
     #####
 
+
     seg_img = get_colored_segmentation_image(seg_arr, n_classes, colors=colors)
+
 
     #####
     # plot plate rect
@@ -219,11 +239,12 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
     cv2.circle(seg_img, (plate_xmin, int((plate_ymax + plate_ymin)/2)), 2, (255,235,5))
     #####
 
-    # resizes the seg_img to original image size
+    
     if inp_img is not None:
         orininal_h = inp_img.shape[0]
         orininal_w = inp_img.shape[1]
         seg_img = cv2.resize(seg_img, (orininal_w, orininal_h))
+        # resizes the seg_img to original image size - not needed after pr_resize var
 
     if (prediction_height is not None) and (prediction_width is not None):
         seg_img = cv2.resize(seg_img, (prediction_width, prediction_height))
@@ -291,9 +312,9 @@ def predict(model=None, inp=None, out_fname=None,
     pr_reshape = pr.reshape((output_height, output_width, 1)).astype('uint8')
     pr_resized = cv2.resize(pr_reshape, dsize=(inp.shape[1], inp.shape[0]), interpolation=cv2.INTER_NEAREST) #(960,1280,1)
     # np.savetxt('pr_resized.txt', pr_resized, delimiter=',', fmt='%i')
+    pr_main_contours = largest_contours(pr_resized, n_classes) # returns numpy array with largest contour of each class
     #####
-    pr_main_contours = largest_contours(pr_resized, n_classes)
-    
+
 
     seg_img = visualize_segmentation(pr_main_contours, inp, n_classes=n_classes,
                                      colors=colors, overlay_img=overlay_img,
@@ -301,7 +322,11 @@ def predict(model=None, inp=None, out_fname=None,
                                      class_names=class_names,
                                      prediction_width=prediction_width,
                                      prediction_height=prediction_height)
-    # seg_img: per-pixel [R,G,B] output
+    # seg_img returns per-pixel (B,R,G) output
+
+    #####
+    plot_orig_and_overlay(inp, seg_img)
+    #####
 
     if out_fname is None:
         try:
