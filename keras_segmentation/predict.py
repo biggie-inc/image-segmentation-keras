@@ -117,7 +117,8 @@ def largest_contours(pr, n_classes):
 def get_cropped(img, coord): # coords[y1, x1, y2, x2] https://github.com/matterport/Mask_RCNN/blob/master/mrcnn/model.py line 2482
     offset_height, offset_width, target_height, target_width = coord
     x = tf.image.crop_to_bounding_box(
-        np.float32(img), offset_height, offset_width, target_height-offset_height, target_width-offset_width
+        np.float32(img), offset_height, offset_width, #target_height-offset_height, target_width-offset_width
+        target_height, target_width
     )
 
     return tf.keras.preprocessing.image.array_to_img(
@@ -126,6 +127,7 @@ def get_cropped(img, coord): # coords[y1, x1, y2, x2] https://github.com/matterp
 
 def get_theta(img,roi):
     window_img = get_cropped(img, roi)
+    cv2.imwrite(f'./predictions/{filename}__window.png',window_img)
     # print('h', window_img.height, 'w', window_img.width)
     a = 0
     b = 0
@@ -233,7 +235,7 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
     # add window dimensions
     cv2.putText(seg_img, f'Window Height: {window_height_adj:.3f} ', (int(window_xmin), int(window_ymin - 8)),
                     cv2.FONT_HERSHEY_DUPLEX, .75, (0, 0, 0), 1)
-    cv2.putText(seg_img, f'Window Width: {window_width:.3f}', (int(window_xmin), int(window_ymax + 8)),
+    cv2.putText(seg_img, f'Window Width: {window_width:.3f}', (int(window_xmin), int(window_ymax + 15)),
                     cv2.FONT_HERSHEY_DUPLEX, .75, (0, 0, 0), 1)
     cv2.circle(seg_img, (w_center, window_ymax), 2, (255,255,255))
     cv2.circle(seg_img, (window_xmin, h_center), 2, (255,235,5))
