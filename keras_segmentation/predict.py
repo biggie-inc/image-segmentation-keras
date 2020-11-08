@@ -316,7 +316,7 @@ def predict(model=None, inp=None, out_fname=None,
     # np.savetxt('pr_resized.txt', pr_resized, delimiter=',', fmt='%i')
     pr_main_contours, window_cntr_only = largest_contours(pr_resized, n_classes) # returns numpy array with largest contour of each class
     
-    xmin, xmax, ymin, ymax  = get_window_xy_min_max(window_only)
+    xmin, xmax, ymin, ymax  = get_window_xy_min_max(window_cntr_only)
     window_cntr_only = window_cntr_only.reshape(960, 1280, 1)
     window_contour_cropped = get_cropped(window_cntr_only, [xmin, ymin, xmax, ymax])
     #####
