@@ -314,10 +314,11 @@ def predict(model=None, inp=None, out_fname=None,
     pr_reshape = pr.reshape((output_height, output_width, 1)).astype('uint8')
     pr_resized = cv2.resize(pr_reshape, dsize=(inp.shape[1], inp.shape[0]), interpolation=cv2.INTER_NEAREST) #(960,1280,1)
     # np.savetxt('pr_resized.txt', pr_resized, delimiter=',', fmt='%i')
-    pr_main_contours, window_only = largest_contours(pr_resized, n_classes) # returns numpy array with largest contour of each class
+    pr_main_contours, window_cntr_only = largest_contours(pr_resized, n_classes) # returns numpy array with largest contour of each class
     
     xmin, xmax, ymin, ymax  = get_window_xy_min_max(window_only)
-    window_contour_cropped = get_cropped(window_only, [xmin, ymin, xmax, ymax])
+    window_cntr_only = window_cntr_only.reshape(960, 1280, 1)
+    window_contour_cropped = get_cropped(window_cntr_only, [xmin, ymin, xmax, ymax])
     #####
 
 
