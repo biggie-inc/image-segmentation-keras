@@ -123,8 +123,8 @@ def largest_contours(pr, n_classes):
 def get_cropped(img, coord): # coords[y1, x1, y2, x2] https://github.com/matterport/Mask_RCNN/blob/master/mrcnn/model.py line 2482
     offset_height, offset_width, target_height, target_width = coord
     x = tf.image.crop_to_bounding_box(
-        np.float32(img), offset_height, offset_width, #target_height-offset_height, target_width-offset_width
-        target_height, target_width
+        np.float32(img), offset_height, offset_width, target_height-offset_height, target_width-offset_width
+        
     )
 
     return tf.keras.preprocessing.image.array_to_img(
@@ -316,8 +316,8 @@ def predict(model=None, inp=None, out_fname=None,
     # np.savetxt('pr_resized.txt', pr_resized, delimiter=',', fmt='%i')
     pr_main_contours, window_only = largest_contours(pr_resized, n_classes) # returns numpy array with largest contour of each class
     
-    window_coords = get_window_xy_min_max(window_only)
-    window_contour_cropped = get_cropped(window_only, window_coords)
+    xmin, xmax, ymin, ymax  = get_window_xy_min_max(window_only)
+    window_contour_cropped = get_cropped(window_only, [xmin, ymin, xmax, ymax])
     #####
 
 
