@@ -57,7 +57,7 @@ def get_colored_segmentation_image(seg_arr, n_classes, colors=class_colors):
         seg_img[:, :, 1] += ((seg_arr_c)*(colors[c][1])).astype('uint8')
         seg_img[:, :, 2] += ((seg_arr_c)*(colors[c][2])).astype('uint8')
     
-    cv2.imwrite('init_seg_img.jpg', seg_img)
+    #cv2.imwrite('init_seg_img.jpg', seg_img)
 
     return seg_img
 
@@ -105,6 +105,7 @@ def concat_lenends(seg_img, legend_img):
 #######
 def largest_contours(pr, n_classes):
     final = np.zeros((960, 1280), dtype='uint8')
+    window_only = final.copy()
     for i in range(1, n_classes):
         prediction = pr[:,:] == i
         prediction = prediction.astype('uint8')
@@ -112,12 +113,18 @@ def largest_contours(pr, n_classes):
         largest_contour = sorted(contours, key=cv2.contourArea, reverse= True)[0]
         cv2.drawContours(final, [largest_contour], -1, i,-1)
 
-    return final
+        if i == 1:
+            cv2.drawContours(window_only, [largest_contour], -1, i, 2)
+        else:
+            pass
+
+    return final, window_only
 
 def get_cropped(img, coord): # coords[y1, x1, y2, x2] https://github.com/matterport/Mask_RCNN/blob/master/mrcnn/model.py line 2482
     offset_height, offset_width, target_height, target_width = coord
     x = tf.image.crop_to_bounding_box(
         np.float32(img), offset_height, offset_width, target_height-offset_height, target_width-offset_width
+        
     )
 
     return tf.keras.preprocessing.image.array_to_img(
@@ -233,12 +240,14 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
     # add window dimensions
     cv2.putText(seg_img, f'Window Height: {window_height_adj:.3f} ', (int(window_xmin), int(window_ymin - 8)),
                     cv2.FONT_HERSHEY_DUPLEX, .75, (0, 0, 0), 1)
-    cv2.putText(seg_img, f'Window Width: {window_width:.3f}', (int(window_xmin), int(window_ymax + 8)),
+    cv2.putText(seg_img, f'Window Width: {window_width:.3f}', (int(window_xmin), int(window_ymax + 15)),
                     cv2.FONT_HERSHEY_DUPLEX, .75, (0, 0, 0), 1)
     cv2.circle(seg_img, (w_center, window_ymax), 2, (255,255,255))
     cv2.circle(seg_img, (window_xmin, h_center), 2, (255,235,5))
     cv2.circle(seg_img, (int((plate_xmax + plate_xmin)/2), plate_ymin), 2, (255,255,255))
     cv2.circle(seg_img, (plate_xmin, int((plate_ymax + plate_ymin)/2)), 2, (255,235,5))
+
+    cv2.imwrite(f'./predictions/window_cropped.png',window_img)
     #####
 
     
@@ -305,7 +314,11 @@ def predict(model=None, inp=None, out_fname=None,
     pr_reshape = pr.reshape((output_height, output_width, 1)).astype('uint8')
     pr_resized = cv2.resize(pr_reshape, dsize=(inp.shape[1], inp.shape[0]), interpolation=cv2.INTER_NEAREST) #(960,1280,1)
     # np.savetxt('pr_resized.txt', pr_resized, delimiter=',', fmt='%i')
-    pr_main_contours = largest_contours(pr_resized, n_classes) # returns numpy array with largest contour of each class
+    pr_main_contours, window_cntr_only = largest_contours(pr_resized, n_classes) # returns numpy array with largest contour of each class
+    
+    xmin, xmax, ymin, ymax  = get_window_xy_min_max(window_cntr_only)
+    window_cntr_only = window_cntr_only.reshape(960, 1280, 1)
+    window_contour_cropped = get_cropped(window_cntr_only, [xmin, ymin, xmax, ymax])
     #####
 
 
@@ -324,7 +337,7 @@ def predict(model=None, inp=None, out_fname=None,
     #####
 
     if out_fname is not None:
-        #cv2.imwrite(out_fname, fig)
+        cv2.imwrite(f'./predictions/cropped_window_contour.jpg', window_contour_cropped)
         fig.savefig(out_fname, dpi=300)
     else:
         #cv2.imwrite(f'./predictions/{filename}__pred.png', fig)
