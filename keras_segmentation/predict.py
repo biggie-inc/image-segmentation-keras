@@ -321,7 +321,8 @@ def predict(model=None, inp=None, out_fname=None,
     #print(f'window cntr only min maxs: {wco_xmin}, {wco_xmax}, {wco_ymin}, {wco_ymax}')
     window_cntr_only = window_cntr_only.reshape(960, 1280, 1)
     window_contour_cropped = get_cropped(window_cntr_only, [wco_ymin, wco_xmin, wco_ymax, wco_xmax])
-    window_contour_cropped.savefig('window_contour_cropped.png')
+    example = plt.imshow(window_contour_cropped)
+    example.savefig('window_contour_cropped.png')
     cv2.imwrite('cv2_window_contour_cropped.png', window_contour_cropped)
     #####
 
