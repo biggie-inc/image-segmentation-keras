@@ -246,7 +246,8 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
     cv2.circle(seg_img, (int((plate_xmax + plate_xmin)/2), plate_ymin), 2, (255,255,255))
     cv2.circle(seg_img, (plate_xmin, int((plate_ymax + plate_ymin)/2)), 2, (255,235,5))
 
-    cv2.imwrite(f'./predictions/window_cropped.png',window_img)
+    cv2.imwrite('./predictions/window_cropped.png', window_img.astype('uint8'))
+    window_img.savefig('window_matplotlib.png')
     #####
 
     
@@ -340,7 +341,7 @@ def predict(model=None, inp=None, out_fname=None,
     #####
 
     if out_fname is not None:
-        cv2.imwrite(f'./predictions/cropped_window_contour.jpg', window_contour_cropped)
+        cv2.imwrite('./predictions/cropped_window_contour.jpg', window_contour_cropped)
         fig.savefig(out_fname, dpi=300)
     else:
         #cv2.imwrite(f'./predictions/{filename}__pred.png', fig)
