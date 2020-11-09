@@ -314,7 +314,7 @@ def predict(model=None, inp=None, out_fname=None,
     pr_resized = cv2.resize(pr_reshape, dsize=(inp.shape[1], inp.shape[0]), interpolation=cv2.INTER_NEAREST) #(960,1280,1)
     # np.savetxt('pr_resized.txt', pr_resized, delimiter=',', fmt='%i')
     pr_main_contours, window_cntr_only = largest_contours(pr_resized, n_classes) # returns numpy array with largest contour of each class
-    print(f'window cntr only shape: {(window_cntr_only.shape}')
+    print(f'window cntr only shape: {window_cntr_only.shape}')
     print(f'window cntr only unique: {np.unique(window_cntr_only)}')
     print(f'window cntr only: {window_cntr_only}')
 
