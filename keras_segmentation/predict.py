@@ -130,6 +130,21 @@ def get_cropped(img, coord): # coords[y1, x1, y2, x2] https://github.com/matterp
         x, data_format=None, scale=True, dtype=None
     )
 
+def trim_axes(img, coord):
+    xmin, xmax, ymin, ymax = coord
+
+    fig, ax1 = plt.subplots(1,1)
+
+    image_trimmed_axes = img[ymin:ymax, xmin:xmax]
+
+    ax1.imshow(image_trimmed_axes)
+    ax1.axis('off')
+
+    plt.tight_layout()
+
+    return fig
+
+
 def get_theta(img,roi):
     window_img = get_cropped(img, roi)
     # print('h', window_img.height, 'w', window_img.width)
@@ -317,13 +332,15 @@ def predict(model=None, inp=None, out_fname=None,
     #print(f'window cntr only unique: {np.unique(window_cntr_only)}')
     #print(f'window cntr only: {window_cntr_only}')
 
-    wco_xmin, wco_xmax, wco_ymin, wco_ymax  = get_window_xy_min_max(window_cntr_only)
+    wco_coords  = get_window_xy_min_max(window_cntr_only)
     #print(f'window cntr only min maxs: {wco_xmin}, {wco_xmax}, {wco_ymin}, {wco_ymax}')
     window_cntr_only = window_cntr_only.reshape(960, 1280, 1)
-    window_contour_cropped = get_cropped(window_cntr_only, [wco_ymin, wco_xmin, wco_ymax, wco_xmax])
-    try: 
+    window_contour_cropped = trim_axes(window_cntr_only, wco_coords)
+
+    try:
+        imread(window_contour_cropped) 
         plt.imsave('window_contour_cropped.png', window_contour_cropped)
-        cv2.imwrite('cv2_window_contour_cropped.png', window_contour_cropped)
+
     except:
         pass
     #####
