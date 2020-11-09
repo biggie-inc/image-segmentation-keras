@@ -124,7 +124,6 @@ def get_cropped(img, coord): # coords[y1, x1, y2, x2] https://github.com/matterp
     offset_height, offset_width, target_height, target_width = coord
     x = tf.image.crop_to_bounding_box(
         np.float32(img), offset_height, offset_width, target_height-offset_height, target_width-offset_width
-        
     )
 
     return tf.keras.preprocessing.image.array_to_img(
@@ -318,6 +317,7 @@ def predict(model=None, inp=None, out_fname=None,
     
     xmin, xmax, ymin, ymax  = get_window_xy_min_max(window_cntr_only)
     window_cntr_only = window_cntr_only.reshape(960, 1280, 1)
+    cv2.imwrite(f'./predictions/window_contour.jpg', window_cntr_only)
     window_contour_cropped = get_cropped(window_cntr_only, [xmin, ymin, xmax, ymax])
     #####
 
