@@ -338,8 +338,9 @@ def predict(model=None, inp=None, out_fname=None,
     window_contour_cropped = trim_axes(window_cntr_only, wco_coords)
 
     try:
-        imread(window_contour_cropped) 
-        plt.imsave('window_contour_cropped.png', window_contour_cropped)
+        from imageio import imread
+        test_img = imread(window_contour_cropped) 
+        plt.imsave('window_contour_cropped.png', test_img)
 
     except:
         pass
