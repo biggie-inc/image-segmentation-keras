@@ -336,11 +336,13 @@ def predict(model=None, inp=None, out_fname=None,
     #print(f'window cntr only min maxs: {wco_xmin}, {wco_xmax}, {wco_ymin}, {wco_ymax}')
     window_cntr_only = window_cntr_only.reshape(960, 1280, 1)
     window_contour_cropped = trim_axes(window_cntr_only, wco_coords)
+    print(window_contour_cropped)
 
     try:
-        from imageio import imread
-        test_img = imread(window_contour_cropped) 
-        plt.imsave('window_contour_cropped.png', test_img)
+        # from imageio import imread
+        # test_img = imread(window_contour_cropped) 
+        # plt.imsave('window_contour_cropped.png', test_img)
+        plt.imsave('window_contour_cropped.png', window_contour_cropped)
 
     except:
         pass
