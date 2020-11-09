@@ -135,7 +135,7 @@ def trim_axes(img, coord):
 
     fig, ax1 = plt.subplots(1,1)
 
-    image_trimmed_axes = img[ymin:ymax, xmin:xmax]
+    image_trimmed_axes = img[ymin:ymax, xmin:xmax].reshape(img.shape[0], img.shape[1])
 
     ax1.imshow(image_trimmed_axes)
     ax1.axis('off')
