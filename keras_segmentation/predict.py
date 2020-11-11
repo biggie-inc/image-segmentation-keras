@@ -3,6 +3,7 @@ import random
 import json
 import os
 from numpy.core.defchararray import title
+from scipy.ndimage import interpolation
 import six
 
 ###
@@ -207,7 +208,8 @@ def get_window_cutlines(seg_arr, seg_img, coords, window_height_adj, pixels_per_
     cv2.imwrite('./window_only.jpg', window_only)
     # create a blank canvas np.zeros(window_height, seg_arr[1])
     print(f'get window cutlines window_only.shape: {window_only.shape}')
-    stretched_image = window_only.resize(window_only.shape[0], int(window_height_adj*ppi), 3)
+    new_dims = window_only.shape[1], int(window_height_adj*ppi)
+    stretched_image = cv2.resize(window_only, new_dims, interpolation=cv2.INTER_NEAREST)
 
     # warp image to canvas
     # transform = cv2.getPerspectiveTransform(ordered_corners, dimensions)
