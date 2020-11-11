@@ -2,6 +2,7 @@ import glob
 import random
 import json
 import os
+from numpy.core.defchararray import title
 import six
 
 ###
@@ -105,7 +106,6 @@ def concat_lenends(seg_img, legend_img):
 #######
 def largest_contours(pr, n_classes):
     final = np.zeros((960, 1280), dtype='uint8')
-    window_only = final.copy()
     for i in range(1, n_classes):
         prediction = pr[:,:] == i
         prediction = prediction.astype('uint8')
@@ -113,12 +113,7 @@ def largest_contours(pr, n_classes):
         largest_contour = sorted(contours, key=cv2.contourArea, reverse= True)[0]
         cv2.drawContours(final, [largest_contour], -1, i,-1)
 
-        if i == 1:
-            cv2.drawContours(window_only, [largest_contour], -1, i, 2)
-        else:
-            pass
-
-    return final, window_only
+    return final
 
 def get_cropped(img, coord): # coords[y1, x1, y2, x2] https://github.com/matterport/Mask_RCNN/blob/master/mrcnn/model.py line 2482
     offset_height, offset_width, target_height, target_width = coord
@@ -129,21 +124,6 @@ def get_cropped(img, coord): # coords[y1, x1, y2, x2] https://github.com/matterp
     return tf.keras.preprocessing.image.array_to_img(
         x, data_format=None, scale=True, dtype=None
     )
-
-def trim_axes(img, coord):
-    xmin, xmax, ymin, ymax = coord
-
-    fig, ax1 = plt.subplots(1,1)
-
-    image_trimmed_axes = img[ymin:ymax, xmin:xmax].reshape(ymax-ymin, xmax-xmin)
-
-    ax1.imshow(image_trimmed_axes)
-    ax1.axis('off')
-
-    plt.tight_layout()
-
-    return fig
-
 
 def get_theta(img,roi):
     window_img = get_cropped(img, roi)
@@ -218,6 +198,49 @@ def plot_orig_and_overlay(inp, seg_img):
     plt.tight_layout()
 
     return fig
+
+
+def get_window_cutlines(seg_arr, seg_img, coords, window_height_adj, pixels_per_inch, hyp=None, theta=None):
+    ppi = pixels_per_inch
+    window_xmin, window_xmax, window_ymin, window_ymax = coords
+    window_only = seg_img[window_ymin:window_ymax, window_xmin:window_xmax]
+    # create a blank canvas np.zeros(window_height, seg_arr[1])
+    print(f'get window cutlines window_only.shape: {window_only.shape}')
+    stretched_image = window_only.resize(window_only.shape[0], window_height_adj*ppi)
+
+    # warp image to canvas
+    # transform = cv2.getPerspectiveTransform(ordered_corners, dimensions)
+    # warped_img = cv2.warpPerspective(seg_img, transform, (seg_arr[1], window_height_adj*ppi))
+
+    # get new contours
+    contours, _ = cv2.findContours(stretched_image.copy(),cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
+    largest_contour = sorted(contours, key=cv2.contourArea, reverse= True)[0]
+
+    # add h and v lines
+    fig, (ax1, ax2) = plt.subplots(2,1, figsize=(10,10))
+
+    hlines = [z for z in range(window_ymin-ppi, window_ymax+ppi, ppi)]
+    vlines = [z for z in range(window_xmin-ppi, window_xmax+ppi, ppi)]
+
+    ax2.hlines(hlines, xmin=window_xmin-ppi, xmax=window_xmax+ppi, linestyle=':', color='gray')
+    ax2.vlines(vlines, ymin=window_ymin-ppi,ymax=window_ymax+ppi, linestyle=':', color='gray')
+
+    # return figure with original and warped image
+
+    ax1.plot(seg_arr[window_ymin:window_ymax, window_xmin:window_xmax])
+    ax2.plot(largest_contour)
+
+    ax1.set(title='Before Transform')
+    ax1.axis('off')
+
+    ax2.set(title='After Transform')
+    ax2.axis('off')
+
+    plt.savefig('cutline_before_after.jpg');
+
+    if hyp and theta is None:
+        pass
+
 #######
 
 def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
@@ -241,6 +264,7 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
     plate_height2 = plate_width2 / 2                
     window_height_adj = (hyp / plate_height2)  * 7.0
     print(f"Visible rear window: {window_width}w X {window_height_adj}h")
+
     #####
 
 
@@ -250,7 +274,6 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
     #####
     # plot plate rect
     #cv2.rectangle(seg_img, (plate_xmin, plate_ymin), (plate_xmax, plate_ymax), (0,0,255), 2)
-
     # add window dimensions
     cv2.putText(seg_img, f'Window Height: {window_height_adj:.3f} ', (int(window_xmin), int(window_ymin - 8)),
                     cv2.FONT_HERSHEY_DUPLEX, .75, (0, 0, 0), 1)
@@ -261,6 +284,7 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
     cv2.circle(seg_img, (int((plate_xmax + plate_xmin)/2), plate_ymin), 2, (255,255,255))
     cv2.circle(seg_img, (plate_xmin, int((plate_ymax + plate_ymin)/2)), 2, (255,235,5))
 
+    get_window_cutlines(seg_arr, seg_img, [window_xmin, window_xmax, window_ymin, window_ymax], window_height_adj, pixels_per_inch)
     #####
 
     
@@ -327,26 +351,26 @@ def predict(model=None, inp=None, out_fname=None,
     pr_reshape = pr.reshape((output_height, output_width, 1)).astype('uint8')
     pr_resized = cv2.resize(pr_reshape, dsize=(inp.shape[1], inp.shape[0]), interpolation=cv2.INTER_NEAREST) #(960,1280,1)
     # np.savetxt('pr_resized.txt', pr_resized, delimiter=',', fmt='%i')
-    pr_main_contours, window_cntr_only = largest_contours(pr_resized, n_classes) # returns numpy array with largest contour of each class
+    pr_main_contours = largest_contours(pr_resized, n_classes) # returns numpy array with largest contour of each class
     #print(f'window cntr only shape: {window_cntr_only.shape}')
     #print(f'window cntr only unique: {np.unique(window_cntr_only)}')
     #print(f'window cntr only: {window_cntr_only}')
 
-    wco_coords  = get_window_xy_min_max(window_cntr_only)
-    #print(f'window cntr only min maxs: {wco_xmin}, {wco_xmax}, {wco_ymin}, {wco_ymax}')
-    window_cntr_only = window_cntr_only.reshape(960, 1280, 1)
-    window_contour_cropped = trim_axes(window_cntr_only, wco_coords)
-    print(window_contour_cropped)
+    # wco_coords  = get_window_xy_min_max(window_cntr_only)
+    # #print(f'window cntr only min maxs: {wco_xmin}, {wco_xmax}, {wco_ymin}, {wco_ymax}')
+    # window_cntr_only = window_cntr_only.reshape(960, 1280, 1)
+    # window_contour_cropped = trim_axes(window_cntr_only, wco_coords)
+    # print(window_contour_cropped)
 
-    try:
-        # from imageio import imread
-        # test_img = imread(window_contour_cropped) 
-        # plt.imsave('window_contour_cropped.png', test_img)
-        plt.imsave('window_contour_cropped.png', window_contour_cropped)
+    # try:
+    #     # from imageio import imread
+    #     # test_img = imread(window_contour_cropped) 
+    #     # plt.imsave('window_contour_cropped.png', test_img)
+    #     plt.imsave('window_contour_cropped.png', window_contour_cropped)
 
-    except:
-        pass
-    #####
+    # except:
+    #     pass
+    # #####
 
 
     seg_img = visualize_segmentation(pr_main_contours, inp, n_classes=n_classes,
@@ -364,7 +388,7 @@ def predict(model=None, inp=None, out_fname=None,
     #####
 
     if out_fname is not None:
-        cv2.imwrite('./predictions/cropped_window_contour.jpg', window_contour_cropped)
+        # cv2.imwrite('./predictions/cropped_window_contour.jpg', window_contour_cropped)
         fig.savefig(out_fname, dpi=300)
     else:
         #cv2.imwrite(f'./predictions/{filename}__pred.png', fig)
