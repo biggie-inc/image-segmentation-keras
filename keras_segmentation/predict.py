@@ -209,7 +209,7 @@ def get_window_cutlines(seg_arr, seg_img, coords, window_height_adj, pixels_per_
     # create a blank canvas np.zeros(window_height, seg_arr[1])
     print(f'get window cutlines window_only.shape: {window_only.shape}')
     new_dims = window_only.shape[1], int(window_height_adj*ppi)
-    stretched_image = cv2.resize(window_only, new_dims, interpolation=cv2.INTER_NEAREST)
+    stretched_image = cv2.resize(window_only, new_dims, interpolation=cv2.INTER_NEAREST).astype('uint8')
 
     # warp image to canvas
     # transform = cv2.getPerspectiveTransform(ordered_corners, dimensions)
