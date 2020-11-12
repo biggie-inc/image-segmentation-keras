@@ -221,6 +221,9 @@ def get_window_cutlines(seg_arr, coords, window_height_adj, pixels_per_inch, hyp
     # get new contours
     contours, _ = cv2.findContours(stretched_image.copy(),cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
     largest_contour = sorted(contours, key=cv2.contourArea, reverse= True)[0]
+    print(f'largest contour: {largest_contour}')
+    contour_points = [(points[0], points[1]) for points in largest_contour]
+    print(f'contour_points: {contour_points}')
 
     # add h and v lines
     fig, (ax1, ax2) = plt.subplots(2,1, figsize=(10,10))
@@ -234,7 +237,7 @@ def get_window_cutlines(seg_arr, coords, window_height_adj, pixels_per_inch, hyp
     # return figure with original and warped image
 
     ax1.plot(seg_arr[window_ymin:window_ymax, window_xmin:window_xmax])
-    ax2.plot(largest_contour)
+    ax2.plot(contour_points)
 
     ax1.set(title='Before Transform')
     ax1.axis('off')
