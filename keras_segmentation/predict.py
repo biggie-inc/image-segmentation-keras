@@ -289,7 +289,7 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
     cv2.circle(seg_img, (int((plate_xmax + plate_xmin)/2), plate_ymin), 2, (255,255,255))
     cv2.circle(seg_img, (plate_xmin, int((plate_ymax + plate_ymin)/2)), 2, (255,235,5))
 
-    get_window_cutlines(seg_arr, seg_img, [window_xmin, window_xmax, window_ymin, window_ymax], window_height_adj, pixels_per_inch)
+    get_window_cutlines(seg_arr, [window_xmin, window_xmax, window_ymin, window_ymax], window_height_adj, pixels_per_inch)
     #####
 
     
