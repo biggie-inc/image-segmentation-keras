@@ -202,7 +202,7 @@ def plot_orig_and_overlay(inp, seg_img):
 
 
 def get_window_cutlines(seg_arr, coords, window_height_adj, pixels_per_inch, hyp=None, theta=None):
-    ppi = pixels_per_inch
+    ppi = round(pixels_per_inch)
     window_xmin, window_xmax, window_ymin, window_ymax = coords
     window_only = seg_arr[window_ymin:window_ymax, window_xmin:window_xmax]
     
