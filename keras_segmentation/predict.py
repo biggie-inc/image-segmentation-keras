@@ -237,7 +237,7 @@ def get_window_cutlines(seg_arr, coords, window_height_adj, pixels_per_inch, hyp
 
     # return figure with original and warped image
 
-    ax1.plot(window_only)
+    ax1.plot(seg_arr)
     ax2.plot(window_only)
 
     ax1.set(title='Before Transform')
