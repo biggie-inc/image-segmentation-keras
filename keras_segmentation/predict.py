@@ -232,13 +232,13 @@ def get_window_cutlines(seg_arr, coords, window_height_adj, pixels_per_inch, hyp
     hlines = [z for z in np.arange(window_ymin-ppi, window_ymax+ppi, ppi)]
     vlines = [z for z in np.arange(window_xmin-ppi, window_xmax+ppi, ppi)]
 
-    ax2.hlines(hlines, xmin=window_xmin-ppi, xmax=window_xmax+ppi, linestyle=':', color='gray')
-    ax2.vlines(vlines, ymin=window_ymin-ppi,ymax=window_ymax+ppi, linestyle=':', color='gray')
+    #ax2.hlines(hlines, xmin=window_xmin-ppi, xmax=window_xmax+ppi, linestyle=':', color='gray')
+    #ax2.vlines(vlines, ymin=window_ymin-ppi,ymax=window_ymax+ppi, linestyle=':', color='gray')
 
     # return figure with original and warped image
 
-    ax1.plot(seg_arr[window_ymin:window_ymax, window_xmin:window_xmax])
-    ax2.plot(contour_points)
+    ax1.plot(window_only)
+    ax2.plot(window_only)
 
     ax1.set(title='Before Transform')
     ax1.axis('off')
