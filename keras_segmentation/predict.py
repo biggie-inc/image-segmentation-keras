@@ -233,7 +233,7 @@ def get_window_cutlines(seg_arr, coords, window_height_adj, pixels_per_inch, hyp
     # vlines = [z for z in np.arange(window_xmin-ppi, window_xmax+ppi, ppi)]
 
     hlines = [z for z in np.arange(0, stretched_image.shape[0], ppi)]
-    vlines = [z for z in np.arange(0, stretched_image.hape[1], ppi)]
+    vlines = [z for z in np.arange(0, stretched_image.shape[1], ppi)]
 
     #ax2.hlines(hlines, xmin=window_xmin-ppi, xmax=window_xmax+ppi, linestyle=':', color='gray')
     #ax2.vlines(vlines, ymin=window_ymin-ppi,ymax=window_ymax+ppi, linestyle=':', color='gray')
