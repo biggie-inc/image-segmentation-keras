@@ -227,7 +227,7 @@ def get_window_cutlines(seg_arr, coords, window_height_adj, pixels_per_inch, hyp
     print(f'contour_points: {contour_points}')
 
     # add h and v lines
-    fig, (ax1, ax2) = plt.subplots(2,1, figsize=(10,10))
+    fig, (ax1, ax2) = plt.subplots(2,1, figsize=(10,10), sharex=True)
 
     # hlines = [z for z in np.arange(window_ymin-ppi, window_ymax+ppi, ppi)]
     # vlines = [z for z in np.arange(window_xmin-ppi, window_xmax+ppi, ppi)]
