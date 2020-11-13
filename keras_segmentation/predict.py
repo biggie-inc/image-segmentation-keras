@@ -230,9 +230,8 @@ def get_window_cutlines(seg_arr, coords, window_height_adj, pixels_per_inch, hyp
     vlines = [z for z in np.arange(0, stretched_image.shape[1]+ppi, ppi)]
 
     # return figure with original and warped image
-
-    ax1.imshow(window_only, cmap='gray')
-    ax2.imshow(stretched_image, cmap='gray')
+    ax1.imshow(window_only, cmap='cividis')
+    ax2.imshow(stretched_image, cmap='cividis')
 
     ax2.hlines(hlines, xmin=0, xmax=stretched_image.shape[1]+round_ppi, linestyle=':', color='gray')
     ax2.vlines(vlines, ymin=0,ymax=stretched_image.shape[0]+round_ppi, linestyle=':', color='gray')
@@ -271,7 +270,6 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
     plate_height2 = plate_width2 / 2                
     window_height_adj = (hyp / plate_height2)  * 7.0
     print(f"Visible rear window: {window_width}w X {window_height_adj}h")
-
     #####
 
 
@@ -390,7 +388,6 @@ def predict(model=None, inp=None, out_fname=None,
 
     #####   
     inp = cv2.cvtColor(inp, cv2.COLOR_BGR2RGB)
-
     fig = plot_orig_and_overlay(inp, seg_img)
     #####
 
