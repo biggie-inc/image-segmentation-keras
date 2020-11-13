@@ -237,8 +237,8 @@ def get_window_cutlines(seg_arr, coords, window_height_adj, pixels_per_inch, hyp
 
     # return figure with original and warped image
 
-    ax1.imshow(seg_arr)
-    ax2.imshow(window_only)
+    ax1.imshow(window_only)
+    ax2.imshow(stretched_image)
     ax2.hlines(hlines, xmin=window_xmin-ppi, xmax=window_xmax+ppi, linestyle=':', color='gray')
     ax2.vlines(vlines, ymin=window_ymin-ppi,ymax=window_ymax+ppi, linestyle=':', color='gray')
 
