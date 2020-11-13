@@ -232,8 +232,8 @@ def get_window_cutlines(seg_arr, coords, window_height_adj, pixels_per_inch, hyp
     # hlines = [z for z in np.arange(window_ymin-ppi, window_ymax+ppi, ppi)]
     # vlines = [z for z in np.arange(window_xmin-ppi, window_xmax+ppi, ppi)]
 
-    hlines = [z for z in np.arange(0, stretched_image.shape[1], ppi)]
-    vlines = [z for z in np.arange(0, stretched_image.shape[0], ppi)]
+    hlines = [z for z in np.arange(0, stretched_image.shape[0], ppi)]
+    vlines = [z for z in np.arange(0, stretched_image.shape[1], ppi)]
 
     #ax2.hlines(hlines, xmin=window_xmin-ppi, xmax=window_xmax+ppi, linestyle=':', color='gray')
     #ax2.vlines(vlines, ymin=window_ymin-ppi,ymax=window_ymax+ppi, linestyle=':', color='gray')
@@ -242,14 +242,16 @@ def get_window_cutlines(seg_arr, coords, window_height_adj, pixels_per_inch, hyp
 
     ax1.imshow(window_only)
     ax2.imshow(stretched_image)
-    ax2.hlines(hlines, xmin=window_xmin-ppi, xmax=window_xmax+ppi, linestyle=':', color='gray')
-    ax2.vlines(vlines, ymin=window_ymin-ppi,ymax=window_ymax+ppi, linestyle=':', color='gray')
+    # ax2.hlines(hlines, xmin=window_xmin-ppi, xmax=window_xmax+ppi, linestyle=':', color='gray')
+    # ax2.vlines(vlines, ymin=window_ymin-ppi,ymax=window_ymax+ppi, linestyle=':', color='gray')
+    ax2.hlines(hlines, xmin=0, xmax=stretched_image.shape[0]+round_ppi, linestyle=':', color='gray')
+    ax2.vlines(vlines, ymin=0,ymax=stretched_image.shape[1]+round_ppi, linestyle=':', color='gray')
 
     ax1.set(title='Before Transform')
     ax1.axis('off')
 
     ax2.set(title='After Transform')
-    ax2.axis('off')
+    #ax2.axis('off')
 
     plt.savefig('cutline_before_after.jpg');
 
