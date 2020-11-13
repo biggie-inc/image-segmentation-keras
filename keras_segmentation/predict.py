@@ -244,8 +244,8 @@ def get_window_cutlines(seg_arr, coords, window_height_adj, pixels_per_inch, hyp
     ax2.imshow(stretched_image)
     # ax2.hlines(hlines, xmin=window_xmin-ppi, xmax=window_xmax+ppi, linestyle=':', color='gray')
     # ax2.vlines(vlines, ymin=window_ymin-ppi,ymax=window_ymax+ppi, linestyle=':', color='gray')
-    ax2.hlines(hlines, xmin=0, xmax=stretched_image.shape[0]+round_ppi, linestyle=':', color='gray')
-    ax2.vlines(vlines, ymin=0,ymax=stretched_image.shape[1]+round_ppi, linestyle=':', color='gray')
+    ax2.hlines(hlines, xmin=0, xmax=stretched_image.shape[1]+round_ppi, linestyle=':', color='gray')
+    ax2.vlines(vlines, ymin=0,ymax=stretched_image.shape[0]+round_ppi, linestyle=':', color='gray')
 
     ax1.set(title='Before Transform')
     ax1.axis('off')
