@@ -229,8 +229,11 @@ def get_window_cutlines(seg_arr, coords, window_height_adj, pixels_per_inch, hyp
     # add h and v lines
     fig, (ax1, ax2) = plt.subplots(2,1, figsize=(10,10))
 
-    hlines = [z for z in np.arange(window_ymin-ppi, window_ymax+ppi, ppi)]
-    vlines = [z for z in np.arange(window_xmin-ppi, window_xmax+ppi, ppi)]
+    # hlines = [z for z in np.arange(window_ymin-ppi, window_ymax+ppi, ppi)]
+    # vlines = [z for z in np.arange(window_xmin-ppi, window_xmax+ppi, ppi)]
+
+    hlines = [z for z in np.arange(0, stretched_image.shape[0], ppi)]
+    vlines = [z for z in np.arange(0, stretched_image.hape[1], ppi)]
 
     #ax2.hlines(hlines, xmin=window_xmin-ppi, xmax=window_xmax+ppi, linestyle=':', color='gray')
     #ax2.vlines(vlines, ymin=window_ymin-ppi,ymax=window_ymax+ppi, linestyle=':', color='gray')
