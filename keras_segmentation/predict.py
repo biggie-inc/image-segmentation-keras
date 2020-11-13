@@ -208,7 +208,7 @@ def get_window_cutlines(seg_arr, coords, window_height_adj, pixels_per_inch, hyp
     window_only = seg_arr[window_ymin:window_ymax, window_xmin:window_xmax]
     
     # resize image
-    new_dims = window_only.shape[1], int(window_height_adj*round_ppi)
+    new_dims = window_only.shape[1], int(round(window_height_adj*ppi))
     stretched_image = cv2.resize(window_only, new_dims, interpolation=cv2.INTER_NEAREST)
     stretched_image = stretched_image.astype('uint8')
     #cv2.imwrite('./stretched_image.jpg', stretched_image)
@@ -230,9 +230,8 @@ def get_window_cutlines(seg_arr, coords, window_height_adj, pixels_per_inch, hyp
     vlines = [z for z in np.arange(0, stretched_image.shape[1]+ppi, ppi)]
 
     # return figure with original and warped image
-
-    ax1.imshow(window_only, cmap='gray')
-    ax2.imshow(stretched_image, cmap='gray')
+    ax1.imshow(window_only, cmap='cividis')
+    ax2.imshow(stretched_image, cmap='cividis')
 
     ax2.hlines(hlines, xmin=0, xmax=stretched_image.shape[1]+round_ppi, linestyle=':', color='gray')
     ax2.vlines(vlines, ymin=0,ymax=stretched_image.shape[0]+round_ppi, linestyle=':', color='gray')
@@ -243,11 +242,10 @@ def get_window_cutlines(seg_arr, coords, window_height_adj, pixels_per_inch, hyp
     ax2.set(title='After Transform')
     ax2.axis('off')
 
-    plt.savefig('cutline_before_after.jpg');
-
     if hyp and theta is None:
         pass
-
+    
+    return fig
 #######
 
 def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
@@ -271,7 +269,6 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
     plate_height2 = plate_width2 / 2                
     window_height_adj = (hyp / plate_height2)  * 7.0
     print(f"Visible rear window: {window_width}w X {window_height_adj}h")
-
     #####
 
 
@@ -291,7 +288,7 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
     cv2.circle(seg_img, (int((plate_xmax + plate_xmin)/2), plate_ymin), 2, (255,255,255))
     cv2.circle(seg_img, (plate_xmin, int((plate_ymax + plate_ymin)/2)), 2, (255,235,5))
 
-    get_window_cutlines(seg_arr, [window_xmin, window_xmax, window_ymin, window_ymax], window_height_adj, pixels_per_inch)
+    cutlines = get_window_cutlines(seg_arr, [window_xmin, window_xmax, window_ymin, window_ymax], window_height_adj, pixels_per_inch)
     #####
 
     
@@ -317,7 +314,7 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
 
         seg_img = concat_lenends(seg_img, legend_img)
 
-    return seg_img
+    return seg_img, cutlines
 
 
 def predict(model=None, inp=None, out_fname=None,
@@ -380,7 +377,7 @@ def predict(model=None, inp=None, out_fname=None,
     # #####
 
 
-    seg_img = visualize_segmentation(pr_main_contours, inp, n_classes=n_classes,
+    seg_img, cutlines = visualize_segmentation(pr_main_contours, inp, n_classes=n_classes,
                                      colors=colors, overlay_img=overlay_img,
                                      show_legends=show_legends,
                                      class_names=class_names,
@@ -390,16 +387,17 @@ def predict(model=None, inp=None, out_fname=None,
 
     #####   
     inp = cv2.cvtColor(inp, cv2.COLOR_BGR2RGB)
-
     fig = plot_orig_and_overlay(inp, seg_img)
     #####
 
     if out_fname is not None:
         # cv2.imwrite('./predictions/cropped_window_contour.jpg', window_contour_cropped)
         fig.savefig(out_fname, dpi=300)
+        cutlines.savefig(f'{out_fname}_cutline', dpi=300)
     else:
         #cv2.imwrite(f'./predictions/{filename}__pred.png', fig)
         fig.savefig(f'./predictions/{filename}__pred.png', dpi=300)
+        cutlines.savefig(f'./predictions/{filename}__cutline.png', dpi=300)
 
     return pr
 
