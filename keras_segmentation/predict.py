@@ -3,6 +3,7 @@ import random
 import json
 import os
 from numpy.core.defchararray import title
+from scipy.ndimage import interpolation
 import six
 
 ###
@@ -200,35 +201,41 @@ def plot_orig_and_overlay(inp, seg_img):
     return fig
 
 
-def get_window_cutlines(seg_arr, seg_img, coords, window_height_adj, pixels_per_inch, hyp=None, theta=None):
+def get_window_cutlines(seg_arr, coords, window_height_adj, pixels_per_inch, hyp=None, theta=None):
     ppi = pixels_per_inch
+    round_ppi = round(pixels_per_inch)
     window_xmin, window_xmax, window_ymin, window_ymax = coords
-    window_only = seg_img[window_ymin:window_ymax, window_xmin:window_xmax]
-    # create a blank canvas np.zeros(window_height, seg_arr[1])
-    print(f'get window cutlines window_only.shape: {window_only.shape}')
-    stretched_image = window_only.resize(window_only.shape[0], window_height_adj*ppi)
+    window_only = seg_arr[window_ymin:window_ymax, window_xmin:window_xmax]
+    
+    # resize image
+    new_dims = window_only.shape[1], int(window_height_adj*round_ppi)
+    stretched_image = cv2.resize(window_only, new_dims, interpolation=cv2.INTER_NEAREST)
+    stretched_image = stretched_image.astype('uint8')
+    #cv2.imwrite('./stretched_image.jpg', stretched_image)
 
     # warp image to canvas
     # transform = cv2.getPerspectiveTransform(ordered_corners, dimensions)
     # warped_img = cv2.warpPerspective(seg_img, transform, (seg_arr[1], window_height_adj*ppi))
 
     # get new contours
-    contours, _ = cv2.findContours(stretched_image.copy(),cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
-    largest_contour = sorted(contours, key=cv2.contourArea, reverse= True)[0]
+    # contours, _ = cv2.findContours(stretched_image.copy(),cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
+    # largest_contour = sorted(contours, key=cv2.contourArea, reverse= True)[0]
+    # contour_points = [(points[0][0], points[0][1]) for points in largest_contour]
+    # print(f'contour_points: {contour_points}')
 
     # add h and v lines
-    fig, (ax1, ax2) = plt.subplots(2,1, figsize=(10,10))
+    fig, (ax1, ax2) = plt.subplots(2,1, figsize=(10,10), sharex=True)
 
-    hlines = [z for z in range(window_ymin-ppi, window_ymax+ppi, ppi)]
-    vlines = [z for z in range(window_xmin-ppi, window_xmax+ppi, ppi)]
-
-    ax2.hlines(hlines, xmin=window_xmin-ppi, xmax=window_xmax+ppi, linestyle=':', color='gray')
-    ax2.vlines(vlines, ymin=window_ymin-ppi,ymax=window_ymax+ppi, linestyle=':', color='gray')
+    hlines = [z for z in np.arange(0, stretched_image.shape[0]+ppi, ppi)]
+    vlines = [z for z in np.arange(0, stretched_image.shape[1]+ppi, ppi)]
 
     # return figure with original and warped image
 
-    ax1.plot(seg_arr[window_ymin:window_ymax, window_xmin:window_xmax])
-    ax2.plot(largest_contour)
+    ax1.imshow(window_only, cmap='gray')
+    ax2.imshow(stretched_image, cmap='gray')
+
+    ax2.hlines(hlines, xmin=0, xmax=stretched_image.shape[1]+round_ppi, linestyle=':', color='gray')
+    ax2.vlines(vlines, ymin=0,ymax=stretched_image.shape[0]+round_ppi, linestyle=':', color='gray')
 
     ax1.set(title='Before Transform')
     ax1.axis('off')
@@ -284,7 +291,7 @@ def visualize_segmentation(seg_arr, inp_img=None, n_classes=None,
     cv2.circle(seg_img, (int((plate_xmax + plate_xmin)/2), plate_ymin), 2, (255,255,255))
     cv2.circle(seg_img, (plate_xmin, int((plate_ymax + plate_ymin)/2)), 2, (255,235,5))
 
-    get_window_cutlines(seg_arr, seg_img, [window_xmin, window_xmax, window_ymin, window_ymax], window_height_adj, pixels_per_inch)
+    get_window_cutlines(seg_arr, [window_xmin, window_xmax, window_ymin, window_ymax], window_height_adj, pixels_per_inch)
     #####
 
     
